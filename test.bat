@@ -58,7 +58,7 @@ if %errorlevel% equ 0 (
 	pause>nul
 	exit
  )
- 
+
 echo Connecting...
 plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/do_test.sh"
 if %errorlevel% equ 0 (
@@ -70,10 +70,25 @@ if %errorlevel% equ 0 (
  )
 plink -ssh -pw %password% -P %port% %user%@%sever% -batch "ls -l %remotePath%"
 
-set /p "input=Test 22.3GB demo or not?(y/n)  "
+set /p "input=Test 22.3GB demo in login machine or not?(y/n)  "
 if /i "%input%" == "y" (
 	start cmd /k call monitor.bat
 	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/run_demo.sh"
+	if %errorlevel% equ 0 (
+        echo Succeed!
+   	 ) else (
+        echo Fail.
+		pause>nul
+		exit
+    )
+
+	echo Default:
+	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "cat %remotePath%/ref_domo_result.txt"
+)
+
+set /p "input=Test 22.3GB demo in computing machine or not?(y/n)  "
+if /i "%input%" == "y" (
+	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/submit.sh"
 	if %errorlevel% equ 0 (
         echo Succeed!
    	 ) else (
