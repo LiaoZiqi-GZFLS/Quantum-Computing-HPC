@@ -49,6 +49,16 @@ if %errorlevel% equ 0 (
 	exit
     )
 
+echo Compiling...
+plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/go.sh"
+if %errorlevel% equ 0 (
+        echo Succeed!
+ ) else (
+        echo Fail.
+	pause>nul
+	exit
+ )
+ 
 echo Connecting...
 plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/do_test.sh"
 if %errorlevel% equ 0 (
