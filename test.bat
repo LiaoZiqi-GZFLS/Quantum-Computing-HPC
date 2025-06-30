@@ -65,12 +65,14 @@ if /i "%input%" == "y" (
 	start cmd /k call monitor.bat
 	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/run_demo.sh"
 	if %errorlevel% equ 0 (
-        	echo Succeed!
+        echo Succeed!
    	 ) else (
-        	echo Fail.
+        echo Fail.
 		pause>nul
 		exit
-    	)
+    )
+
+	echo Default:
 	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "cat %remotePath%/ref_domo_result.txt"
 )
 
