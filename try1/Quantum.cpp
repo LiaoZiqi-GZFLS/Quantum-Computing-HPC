@@ -68,18 +68,19 @@ private:
     std::condition_variable condition;
     bool stop;
 };
+const double sqrt2_inv=std::sqrt(2.0)/2;
 
 class Matrix {
 public:
     Matrix(){}
 
-    Matrix(char c) {
+    inline Matrix(char c) {
         if (c == 'I') {
             data[0][0] = 1; data[0][1] = 0;
             data[1][0] = 0; data[1][1] = 1;
         } else if (c == 'H') {
-            data[0][0] = 1 / std::sqrt(2); data[0][1] = 1 / std::sqrt(2);
-            data[1][0] = 1 / std::sqrt(2); data[1][1] = -1 / std::sqrt(2);
+            data[0][0] = 1 * sqrt2_inv; data[0][1] = 1 * sqrt2_inv;
+            data[1][0] = 1 * sqrt2_inv; data[1][1] = -1 * sqrt2_inv;
         } else if (c == 'X') {
             data[0][0] = 0; data[0][1] = 1;
             data[1][0] = 1; data[1][1] = 0;
@@ -95,33 +96,47 @@ public:
         }
     }
 
-    std::complex<double> get(int i, int j) const {
+    inline std::complex<double> get(int i, int j) const {
         return data[i][j];
     }
 
-    void set(int i, int j, std::complex<double> value) {
+    inline void set(int i, int j, std::complex<double> value) {
         data[i][j] = value;
     }
 
-    Matrix operator+(const Matrix& other) const {
+    inline Matrix operator+(const Matrix& other) const {
         Matrix result;
-        for (int i = 0; i < 2; ++i) {
-            for (int j = 0; j < 2; ++j) {
-                result.set(i, j, this->get(i, j) + other.get(i, j));
-            }
-        }
+        std::complex<double> a11,a12,a21,a22,
+            b11,b12,b21,b22;
+        a11 = this->get(0, 0); a12 = this->get(0, 1);
+        a21 = this->get(1, 0); a22 = this->get(1, 1);
+        b11 = other.get(0, 0); b12 = other.get(0, 1);
+        b21 = other.get(1, 0); b22 = other.get(1, 1);
+        result.set(0, 0, a11 + b11);
+        result.set(0, 1, a12 + b12);
+        result.set(1, 0, a21 + b21);
+        result.set(1, 1, a22 + b22);
         return result;
     }
 
-    Matrix operator*(const Matrix& other) const {
+    inline Matrix operator*(const Matrix& other) const {
         Matrix result;
-        for(int i = 0; i < 2; i++) {
-            for(int k = 0; k < 2; k++) {
-                for (int j = 0; j < 2; j++) {
-                    result.set(i, j, result.get(i, j) + this->get(i, k) * other.get(k, j));
-                }
-            }
-        }
+        std::complex<double> a11,a12,a21,a22,
+            b11,b12,b21,b22;
+        a11 = this->get(0, 0); a12 = this->get(0, 1);
+        a21 = this->get(1, 0); a22 = this->get(1, 1);
+        b11 = other.get(0, 0); b12 = other.get(0, 1);
+        b21 = other.get(1, 0); b22 = other.get(1, 1);
+        // 使用分配律计算矩阵乘法
+        // result.set(0, 0, a11 * b11 + a12 * b21);
+        // result.set(0, 1, a11 * b12 + a12 * b22);
+        // result.set(1, 0, a21 * b11 + a22 * b21);
+        // result.set(1, 1, a21 * b12 + a22 * b22);
+
+        result.set(0, 0, a11 * b11 + a12 * b21);
+        result.set(0, 1, a11 * b12 + a12 * b22);
+        result.set(1, 0, a21 * b11 + a22 * b21);
+        result.set(1, 1, a21 * b12 + a22 * b22);
         return result;
     }
 
@@ -144,39 +159,34 @@ Matrix qpow(Matrix* a, size_t b) {
 // }
 
 void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
-    std::vector<std::pair<char, size_t>> gateList;
-    size_t l = 0;
-    for (size_t i = 0; i < N; i++) {
-        if (i == 0 || Gates[i] == Gates[i - 1]) {
-            l++;
-            } else {
-        gateList.push_back(std::make_pair(Gates[i - 1],l));
-            l = 1;
-        }
-    }
-    if (l > 0) {
-        gateList.push_back(std::make_pair(Gates[N - 1], l));
-    }
-    printf("Gate list size: %zu\n", gateList.size());
-    int core =std::thread::hardware_concurrency()+2;
-    size_t steps=(gateList.size()+core-1)/(core);
+    int core =std::thread::hardware_concurrency()+1;
+    size_t steps=(N+core-1)/(core);
     if (steps == 0) steps = 1;// 确保至少有一个步骤
     
-    printf("Core count: %d, Steps: %zu\n", core, steps); 
+    // printf("Core count: %d, Steps: %zu\n", core, steps); 
     ThreadPool pool(core);
     std::vector<std::future<Matrix>>futures;
-    for(size_t i=0;i<gateList.size();i+=steps){
-        futures.push_back(pool.enqueue([&gateList, i, steps]() {
-            size_t end = std::min(i + steps, gateList.size());
+    for(size_t i=0;i<N;i+=steps){
+        futures.push_back(pool.enqueue([&Gates, i, steps, N]() {
+            size_t end = std::min(i + steps, N);
             Matrix result('I');
+            int l=0;
             for (size_t j = i; j < end; ++j) {
-                result = qpow(new Matrix(gateList[j].first), gateList[j].second)*result;
+                if(j==i|| Gates[j] == Gates[j-1]) {
+                    l++;
+                } else {
+                    if (l > 0) {
+                        result = qpow(new Matrix(Gates[j-1]), l) * result;
+                    }
+                    l = 1;
+                }
             }
+            result = qpow(new Matrix(Gates[end-1]), l) * result;
             return result;
         }));
 
     }
-    printf("Futures size: %zu\n", futures.size());
+    // printf("Futures size: %zu\n", futures.size());
     Matrix result('I');
     for(auto& future : futures) {
         result = future.get() * result;
