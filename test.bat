@@ -83,7 +83,7 @@ if /i "%input%" == "y" (
     )
 
 	echo Default:
-	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "cat %remotePath%/ref_domo_result.txt"
+	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "cat %remotePath%/demo_result.txt"
 )
 
 set /p "input=Test 22.3GB demo in computing machine or not?(y/n)  "
