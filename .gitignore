@@ -34,3 +34,7 @@
 # Data files
 *.dat
 *.bin
+
+
+#vscode
+.vscode/
