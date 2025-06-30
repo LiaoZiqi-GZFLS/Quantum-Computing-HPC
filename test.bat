@@ -60,9 +60,9 @@ if %errorlevel% equ 0 (
  )
 plink -ssh -pw %password% -P %port% %user%@%sever% -batch "ls -l %remotePath%"
 
-set /p "input=Test 22.3GB demo or not?(y/n)"
-if /i %input% == "y" (
-	start cmd /k plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "top -1"
+set /p "input=Test 22.3GB demo or not?(y/n)  "
+if /i "%input%" == "y" (
+	start cmd /k call monitor.bat
 	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/run_demo.sh"
 	if %errorlevel% equ 0 (
         	echo Succeed!
