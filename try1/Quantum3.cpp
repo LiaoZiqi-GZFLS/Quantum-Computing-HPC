@@ -7,6 +7,7 @@
 #include <functional>
 #include <mutex>
 #include <condition_variable>
+#include <utility>
 
 class ThreadPool {
 public:
@@ -114,102 +115,72 @@ public:
 
     Matrix operator*(const Matrix& other) const {
         Matrix result;
-        std::complex<double> x1 = (this->get(0, 0) + this->get(1, 1)) * (other.get(0, 0) + other.get(1, 1));
-        std::complex<double> x2 = (this->get(1, 0) + this->get(1, 1)) * (other.get(0, 0));
-        std::complex<double> x3 = (this->get(0, 0)) * (other.get(0, 1) - other.get(1, 1));
-        std::complex<double> x4 = (this->get(1, 1)) * (other.get(1, 0) - other.get(0, 0));
-        std::complex<double> x5 = (this->get(0, 0) + this->get(0, 1)) * (other.get(1, 1));
-        std::complex<double> x6 = (this->get(1, 0) - this->get(0, 0)) * (other.get(0, 0) + other.get(0, 1));
-        std::complex<double> x7 = (this->get(0, 1) - this->get(1, 1)) * (other.get(1, 0) + other.get(1, 1));
-        result.set(0, 0, x1 + x4 - x5 + x7);
-        result.set(0, 1, x3 + x5);
-        result.set(1, 0, x2 + x4);
-        result.set(1, 1, x1 - x2 + x3 - x6);
+        for(int i = 0; i < 2; i++) {
+            for(int k = 0; k < 2; k++) {
+                for (int j = 0; j < 2; j++) {
+                    result.set(i, j, result.get(i, j) + this->get(i, k) * other.get(k, j));
+                }
+            }
+        }
         return result;
     }
 
 private:
     std::complex<double> data[2][2];
 };
-
-Matrix work(ThreadPool& pool, size_t N, Matrix* matrices) {
-    size_t times=0;
-    Matrix** dp=new Matrix*[2];
-    dp[0]=matrices;
-    dp[1]=new Matrix[N];
-    while (N > 1) {
-        std::vector<std::future<Matrix>> futures;
-        for (size_t i = 0; i < N; i += 2) {
-            futures.push_back(pool.enqueue([&dp, i,times]() {
-                return dp[times % 2][i] * dp[times % 2][i + 1];
-            }));
-        }
-        if (N & 1) {
-            dp[(times+1)%2][N / 2] = dp[times%2][N - 1];
-        }
-        for (size_t i = 0; i < N / 2; ++i) {
-            dp[(times+1)%2][i] = futures[i].get();
-        }
-        N = (N + 1) / 2;
-        times++;
-    }
-    Matrix result = dp[times % 2][0];
-    delete[] dp[0];
-    delete[] dp[1];
-    delete[] dp;
-    return result;
-}
-
-
-Matrix qpow(Matrix a, size_t b) {
+Matrix qpow(Matrix* a, size_t b) {
     Matrix result('I');
     while (b) {
         if (b & 1) {
-            result = result * a;
+            result = result * (*a);
         }
         b >>= 1;
-        a = a * a;
+        a = new Matrix(*a * *a);
     }
     return result;
 }
+// Matrix work(ThreadPool& pool, size_t N, Matrix* matrices) {
+    
+// }
 
 void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
-    std::vector<Matrix> gateList;
-
+    std::vector<std::pair<char, size_t>> gateList;
     size_t l = 0;
     for (size_t i = 0; i < N; i++) {
         if (i == 0 || Gates[i] == Gates[i - 1]) {
             l++;
             } else {
-        gateList.push_back(qpow(Matrix(Gates[i - 1]), l));
+        gateList.push_back(std::make_pair(Gates[i - 1],l));
             l = 1;
         }
     }
     if (l > 0) {
-        gateList.push_back(qpow(Matrix(Gates[N - 1]), l));
+        gateList.push_back(std::make_pair(Gates[N - 1], l));
     }
-    const int core=std::thread::hardware_concurrency()==0 ? 1 : std::thread::hardware_concurrency();
-    const size_t steps=(gateList.size() + core/2 - 1) / core/2;
-
-    ThreadPool pool(std::thread::hardware_concurrency());
-    std::vector<std::future<Matrix>> futures;
-    for (size_t i = 0; i < gateList.size(); i += steps) {
-        const size_t length = std::min(steps, gateList.size() - i);
-        Matrix* matrices= new Matrix[length];
-        for (size_t j = 0; j < length; ++j) {
-            matrices[j] = gateList[i + j];
-        }
-        futures.push_back(pool.enqueue([&pool, &matrices, length]() {
-            Matrix result = work(pool, length, matrices);
+    printf("Gate list size: %zu\n", gateList.size());
+    int core =std::thread::hardware_concurrency()+2;
+    size_t steps=(gateList.size()+core-1)/(core);
+    if (steps == 0) steps = 1;// 确保至少有一个步骤
+    
+    printf("Core count: %d, Steps: %zu\n", core, steps); 
+    ThreadPool pool(core);
+    std::vector<std::future<Matrix>>futures;
+    for(size_t i=0;i<gateList.size();i+=steps){
+        futures.push_back(pool.enqueue([&gateList, i, steps]() {
+            size_t end = std::min(i + steps, gateList.size());
+            Matrix result('I');
+            for (size_t j = i; j < end; ++j) {
+                result = qpow(new Matrix(gateList[j].first), gateList[j].second)*result;
+            }
             return result;
         }));
-    }
-    Matrix* results = new Matrix[futures.size()];
-    for (size_t i = 0; i < futures.size(); ++i) {
-        results[i] = futures[i].get();
-    }
 
-    Matrix result = work(pool, futures.size(), results);
+    }
+    printf("Futures size: %zu\n", futures.size());
+    Matrix result('I');
+    for(auto& future : futures) {
+        result = future.get() * result;
+    }
     Alpha = result.get(0, 0);
     Beta = result.get(1, 0);
 

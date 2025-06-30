@@ -7,6 +7,8 @@
 #include <functional>
 #include <mutex>
 #include <condition_variable>
+#include <fstream>
+#include <stdexcept>
 
 class ThreadPool {
 public:
@@ -70,15 +72,19 @@ private:
 
 class Matrix {
 public:
-    Matrix(){}
+    Matrix() {
+        data[0][0] = 0; data[0][1] = 0;
+        data[1][0] = 0; data[1][1] = 0;
+    }
 
     Matrix(char c) {
         if (c == 'I') {
             data[0][0] = 1; data[0][1] = 0;
             data[1][0] = 0; data[1][1] = 1;
         } else if (c == 'H') {
-            data[0][0] = 1 / std::sqrt(2); data[0][1] = 1 / std::sqrt(2);
-            data[1][0] = 1 / std::sqrt(2); data[1][1] = -1 / std::sqrt(2);
+            double inv_sqrt2 = 1 / std::sqrt(2);
+            data[0][0] = inv_sqrt2; data[0][1] = inv_sqrt2;
+            data[1][0] = inv_sqrt2; data[1][1] = -inv_sqrt2;
         } else if (c == 'X') {
             data[0][0] = 0; data[0][1] = 1;
             data[1][0] = 1; data[1][1] = 0;
@@ -133,33 +139,34 @@ private:
 };
 
 Matrix work(ThreadPool& pool, size_t N, Matrix* matrices) {
-    size_t times=0;
-    Matrix** dp=new Matrix*[2];
-    dp[0]=matrices;
-    dp[1]=new Matrix[N];
+    size_t times = 0;
+    Matrix** dp = new Matrix*[2];
+    dp[0] = matrices;
+    dp[1] = new Matrix[N];
+
     while (N > 1) {
         std::vector<std::future<Matrix>> futures;
         for (size_t i = 0; i < N; i += 2) {
-            futures.push_back(pool.enqueue([&dp, i,times]() {
+            futures.push_back(pool.enqueue([&dp, i, times]() {
                 return dp[times % 2][i] * dp[times % 2][i + 1];
             }));
         }
         if (N & 1) {
-            dp[(times+1)%2][N / 2] = dp[times%2][N - 1];
+            dp[(times + 1) % 2][N / 2] = dp[times % 2][N - 1];
         }
         for (size_t i = 0; i < N / 2; ++i) {
-            dp[(times+1)%2][i] = futures[i].get();
+            dp[(times + 1) % 2][i] = futures[i].get();
         }
         N = (N + 1) / 2;
         times++;
     }
-    Matrix result = dp[times % 2][0];
+
+    Matrix final_result = dp[times % 2][0];
     delete[] dp[0];
     delete[] dp[1];
     delete[] dp;
-    return result;
+    return final_result;
 }
-
 
 Matrix qpow(Matrix a, size_t b) {
     Matrix result('I');
@@ -180,30 +187,33 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
     for (size_t i = 0; i < N; i++) {
         if (i == 0 || Gates[i] == Gates[i - 1]) {
             l++;
-            } else {
-        gateList.push_back(qpow(Matrix(Gates[i - 1]), l));
+        } else {
+            gateList.push_back(qpow(Matrix(Gates[i - 1]), l));
             l = 1;
         }
     }
     if (l > 0) {
         gateList.push_back(qpow(Matrix(Gates[N - 1]), l));
     }
-    const int core=std::thread::hardware_concurrency()==0 ? 1 : std::thread::hardware_concurrency();
-    const size_t steps=(gateList.size() + core/2 - 1) / core/2;
 
-    ThreadPool pool(std::thread::hardware_concurrency());
+    const int core = std::thread::hardware_concurrency() == 0 ? 1 : std::thread::hardware_concurrency();
+    const size_t steps = (gateList.size() + core / 2 - 1) / core / 2;
+
+    ThreadPool pool(core);
     std::vector<std::future<Matrix>> futures;
     for (size_t i = 0; i < gateList.size(); i += steps) {
         const size_t length = std::min(steps, gateList.size() - i);
-        Matrix* matrices= new Matrix[length];
+        Matrix* matrices = new Matrix[length];
         for (size_t j = 0; j < length; ++j) {
             matrices[j] = gateList[i + j];
         }
         futures.push_back(pool.enqueue([&pool, &matrices, length]() {
             Matrix result = work(pool, length, matrices);
+            delete[] matrices;
             return result;
         }));
     }
+
     Matrix* results = new Matrix[futures.size()];
     for (size_t i = 0; i < futures.size(); ++i) {
         results[i] = futures[i].get();
@@ -217,4 +227,8 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
     double norm = std::sqrt(std::abs(Alpha * std::conj(Alpha) + Beta * std::conj(Beta)));
     Alpha /= norm;
     Beta /= norm;
+
+    delete[] results;
 }
+
+
