@@ -60,14 +60,21 @@ if %errorlevel% equ 0 (
  )
 
 echo Connecting...
-plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/do_test.sh"
-if %errorlevel% equ 0 (
-        echo Succeed!
- ) else (
-        echo Fail.
-	pause>nul
-	exit
- )
+set /p "input=Do you want to test the cpp?(y/n)  "
+if /i "%input%" == "y" (
+	echo Testing...
+	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/do_test.sh"
+	if %errorlevel% equ 0 (
+			echo Succeed!
+	) else (
+			echo Fail.
+		pause>nul
+		exit
+	)
+) else (
+	echo Skipping test.
+)
+
 plink -ssh -pw %password% -P %port% %user%@%sever% -batch "ls -l %remotePath%"
 
 set /p "input=Test 22.3GB demo in login machine or not?(y/n)  "
