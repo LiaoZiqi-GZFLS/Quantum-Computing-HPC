@@ -20,6 +20,9 @@ do
 	# 比较两个文件的第一行
 	if [ "$line1" = "$line2" ]; then
         	((correct++))
+	else
+		echo $line1$
+		echo $line2$
 	fi
 done
 
