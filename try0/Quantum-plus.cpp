@@ -82,7 +82,7 @@ Matrix qpow(Matrix* a, size_t b) {
 }
 
 void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
-    int core = omp_get_max_threads();
+    int core = omp_get_max_threads()*48;
     size_t steps = N / core + (N % core != 0);
     if (steps == 0) steps = 1;
 

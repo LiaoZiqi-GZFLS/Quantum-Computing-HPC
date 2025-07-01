@@ -69,18 +69,6 @@ private:
     int num = 0;
 };
 
-Matrix qpow(Matrix* a, size_t b) {
-    Matrix result('I');
-    while (b) {
-        if (b & 1) {
-            result = result * (*a);
-        }
-        b >>= 1;
-        a = new Matrix(*a * *a);
-    }
-    return result;
-}
-
 void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
     int core = omp_get_max_threads();
     size_t steps = N / core + (N % core != 0);
@@ -90,14 +78,14 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
 
     Matrix result('I');
 
-    #pragma omp parallel num_threads(core)
+    #pragma omp parallel for
+    for(size_t i=0;i<core*6;i++)
     {
-        int thread_id = omp_get_thread_num();
-        size_t start = thread_id * steps;
+        size_t start = i * steps;
         size_t end = std::min(start + steps, N);
 
         for (size_t j = start; j < end; ++j) {
-            partial_results[thread_id] = Matrix(Gates[j]) * partial_results[thread_id];
+            partial_results[i] = Matrix(Gates[j]) * partial_results[i];
         }
     }
 
@@ -107,14 +95,14 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
 
     std::vector<Matrix> partial_results2(core, Matrix('I'));
 
-    #pragma omp parallel num_threads(core2)
+    #pragma omp parallel for
+    for(size_t i=0;i<core2;i++)
     {
-        int thread_id = omp_get_thread_num();
-        size_t start = thread_id * steps2;
+        size_t start = i * steps2;
         size_t end = std::min(start + steps2, partial_results.size());
 
         for (size_t j = start; j < end; ++j) {
-            partial_results2[thread_id] = partial_results[j] * partial_results2[thread_id];
+            partial_results2[i] = partial_results[j] * partial_results2[i];
         }
 
 
