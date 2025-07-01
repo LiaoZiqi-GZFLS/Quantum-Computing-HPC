@@ -55,7 +55,7 @@ if /i "%input%" == "y" (
     )
 
 	echo Default:
-	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "cat %remotePath%/ref_domo_result.txt"
+	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "cat %remotePath%/ref_demo_result.txt"
 ) else (
     echo Testing...
     plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/auto_submit.sh auto_test.sh"
