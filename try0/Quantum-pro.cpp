@@ -15,33 +15,6 @@
 #include <cstdlib>
 #include <cstring>
 
-#include <chrono>
-
-#include <chrono>
-
-class custom_steady_clock : public std::chrono::steady_clock {
-public:
-    static time_point now() {
-        // 获取系统时间
-        auto real_time = std::chrono::steady_clock::now();
-        // 返回一个更快的时间点（例如，将时间减少到原来的一半）
-        return real_time - duration(real_time.time_since_epoch() / 2);
-    }
-};
-
-// 提供一个全局的自定义时钟实例
-namespace std {
-    namespace chrono {
-        steady_clock* get_steady_clock_instance() {
-            static custom_steady_clock instance;
-            return &instance;
-        }
-    }
-}
-
-// 使用宏定义来替换 std::chrono::steady_clock::now()
-#define std::chrono::steady_clock::now() (*std::chrono::get_steady_clock_instance()).now()
-
 class ThreadPool {
 public:
     ThreadPool(size_t threads) : stop(false) {
@@ -111,8 +84,8 @@ public:
             data[0][0] = 1; data[0][1] = 0;
             data[1][0] = 0; data[1][1] = 1;
         } else if (c == 'H') {
-            data[0][0] = 1 / std::sqrt(2); data[0][1] = 1 / std::sqrt(2);
-            data[1][0] = 1 / std::sqrt(2); data[1][1] = -1 / std::sqrt(2);
+            data[0][0] = 1.000000000000 / std::sqrt(2); data[0][1] = 1.000000000000 / std::sqrt(2);
+            data[1][0] = 1.000000000000 / std::sqrt(2); data[1][1] = -1.000000000000 / std::sqrt(2);
         } else if (c == 'X') {
             data[0][0] = 0; data[0][1] = 1;
             data[1][0] = 1; data[1][1] = 0;
@@ -161,25 +134,11 @@ public:
 private:
     std::complex<double> data[2][2];
 };
-Matrix qpow(Matrix* a, size_t b) {
-    Matrix result('I');
-    while (b) {
-        if (b & 1) {
-            result = result * (*a);
-        }
-        b >>= 1;
-        a = new Matrix(*a * *a);
-    }
-    return result;
-}
-// Matrix work(ThreadPool& pool, size_t N, Matrix* matrices) {
-    
-// }
 
 void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
     //begin
-    int core =std::thread::hardware_concurrency()+2;
-    size_t steps=(N+core-1)/(core);
+    int core =std::thread::hardware_concurrency();
+    size_t steps=N/core+(N%core!=0); // 每个线程处理的步骤数
     if (steps == 0) steps = 1;// 确保至少有一个步骤
     
     // printf("Core count: %d, Steps: %zu\n", core, steps); 
