@@ -1,12 +1,11 @@
+#include <iostream>
 #include <complex>
 #include <vector>
-#include <mutex>
 #include <omp.h>
-#include <thread>
 
 class Matrix {
 public:
-    Matrix() {}
+    Matrix(){}
 
     Matrix(char c) {
         if (c == 'I') {
@@ -46,18 +45,18 @@ public:
     Matrix operator*(const Matrix& other) const {
         Matrix result;
         result.num = this->num + other.num;
-        for (int i = 0; i < 2; ++i) {
-            for (int k = 0; k < 2; ++k) {
-                for (int j = 0; j < 2; ++j) {
-                    result.data[i][j] += this->data[i][k] * other.data[k][j];
+        for(int i = 0; i < 2; i++) {
+            for(int k = 0; k < 2; k++) {
+                for (int j = 0; j < 2; j++) {
+                    result.set(i, j, result.get(i, j) + this->get(i, k) * other.get(k, j));
                 }
             }
         }
-        if (result.num >= 2) {
+        if(result.num>=2){
             std::complex<double> c2(2, 0);
-            for (int i = 0; i < 2; ++i) {
-                for (int j = 0; j < 2; ++j) {
-                    result.data[i][j] /= c2;
+            for(int i = 0; i < 2; i++) {
+                for(int j = 0; j < 2; j++) {
+                    result.set(i, j, result.get(i, j) / c2);
                 }
             }
             result.num -= 2;
@@ -66,38 +65,53 @@ public:
     }
 
 private:
-    std::complex<double> data[2][2] = {0};
+    std::complex<double> data[2][2];
     int num = 0;
 };
 
-void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
-    int core = std::thread::hardware_concurrency();
-    size_t steps = N / core + (N % core != 0);
-    if (steps == 0) steps = 1; // 确保至少有一个步骤
+Matrix qpow(Matrix* a, size_t b) {
+    Matrix result('I');
+    while (b) {
+        if (b & 1) {
+            result = result * (*a);
+        }
+        b >>= 1;
+        a = new Matrix(*a * *a);
+    }
+    return result;
+}
 
-    std::vector<Matrix> matrices;
-    matrices.reserve(N); // 预分配内存，避免多次动态分配
-    for (size_t i = 0; i < N; ++i) {
-        matrices.emplace_back(Gates[i]);
+void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
+    int core = omp_get_max_threads();
+    size_t steps = N / core + (N % core != 0);
+    if (steps == 0) steps = 1;
+
+    std::vector<Matrix> partial_results(core, Matrix('I'));
+
+    #pragma omp parallel num_threads(core)
+    {
+        int thread_id = omp_get_thread_num();
+        size_t start = thread_id * steps;
+        size_t end = std::min(start + steps, N);
+
+        for (size_t j = start; j < end; ++j) {
+            partial_results[thread_id] = Matrix(Gates[j]) * partial_results[thread_id];
+        }
     }
 
     Matrix result('I');
-    #pragma omp parallel for
-    for (size_t i = 0; i < N; ++i) {
-        #pragma omp critical
-        {
-            result = matrices[i] * result;
-        }
+    for (const auto& partial : partial_results) {
+        result = partial * result;
     }
 
     Alpha = result.get(0, 0);
     Beta = result.get(1, 0);
-    if (result.getNum() != 0) {
-        for (int i = 0; i < result.getNum() / 2; ++i) {
+    if(result.getNum() != 0) {
+        for(int i = 0; i < result.getNum()/2; i++) {
             Alpha /= 2;
             Beta /= 2;
         }
-        if (result.getNum() % 2 == 1) {
+        if(result.getNum() % 2 == 1) {
             std::complex<double> c2(std::sqrt(2.0), 0);
             Alpha /= c2;
             Beta /= c2;
