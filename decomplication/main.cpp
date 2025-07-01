@@ -7,7 +7,7 @@
 #include <fstream>
 #include <vector>
 
-// 包含 simulate 函数的声明
+//simulate
 #include "simulate.h"
 
 extern "C" {
