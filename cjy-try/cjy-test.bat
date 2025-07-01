@@ -1,0 +1,110 @@
+@echo off
+
+setlocal enabledelayedexpansion
+
+:input
+set "filePath=Quantum.cpp"
+set "newFile=simulate.cpp"
+
+if exist "!filePath!" (
+    echo File exists!
+) else (
+    echo File doesn't exist!
+    goto :input
+)
+
+if exist "!newFile!" (
+	del "!newFile!" /F /Q
+)
+
+copy  "!filePath!" "!newFile!" /Y
+
+set  "remotePath=/work/sustcsc_02/workspace"
+set  "user=sustcsc_02"
+set  "password=yeshenhaike"
+set  "port=18188"
+set  "sever=172.18.6.40"
+
+set "localFilePath=file"
+
+echo %path% | findstr /i "putty"  >nul
+if %errorlevel% equ 0 (
+    echo PuTTY exists
+) else (
+    echo PuTTY doesn't exist
+	:: 打开 PuTTY 下载网站
+    	echo try at https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html
+	start https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html
+	pause>nul
+	exit
+)
+:submit
+echo Submitting...
+pscp -ssh -pw %password% -P %port% "!newFile!" %user%@%sever%:"!remotePath!"
+if %errorlevel% equ 0 (
+        echo Succeed!
+    ) else (
+        echo Fail.
+	goto :submit
+    )
+:compile
+echo Compiling...
+plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/go.sh"
+if %errorlevel% equ 0 (
+        echo Succeed!
+ ) else (
+        echo Fail.
+	goto :compile
+ )
+:test
+echo Connecting...
+set /p "input=Do you want to test the cpp?(y/n)  "
+if /i "%input%" == "y" (
+	echo Testing...
+	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/do_test.sh"
+	if %errorlevel% equ 0 (
+			echo Succeed!
+	) else (
+			echo Fail.
+		goto :test
+	)
+) else (
+	echo Skipping test.
+)
+
+plink -ssh -pw %password% -P %port% %user%@%sever% -batch "ls -l %remotePath%"
+
+set /p "input=Test 22.3GB demo in login machine or not?(y/n)  "
+if /i "%input%" == "y" (
+	start cmd /k call ../monitor.bat
+	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/run_demo.sh"
+	if %errorlevel% equ 0 (
+        echo Succeed!
+   	 ) else (
+        echo Fail.
+		pause>nul
+		exit
+    )
+
+	echo Default:
+	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "cat %remotePath%/demo_result.txt"
+)
+
+set /p "input=Test 22.3GB demo in computing machine or not?(y/n)  "
+if /i "%input%" == "y" (
+	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "%remotePath%/submit.sh"
+	if %errorlevel% equ 0 (
+        echo Succeed!
+   	 ) else (
+        echo Fail.
+		pause>nul
+		exit
+    )
+
+	echo Default:
+	plink -ssh -pw %password% -P %port% %user%@%sever%  -batch "cat %remotePath%/ref_domo_result.txt"
+)
+
+endlocal
+
+pause>nul
