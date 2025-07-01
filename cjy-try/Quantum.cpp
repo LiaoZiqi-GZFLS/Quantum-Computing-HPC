@@ -91,11 +91,11 @@ public:
         }
         else if (c == 'H')
         {
-            data[0][0] = 1.00000 / sqrt2;
-            data[0][1] = 1.00000 / sqrt2;
-            data[1][0] = 1.00000 / sqrt2;
-            data[1][1] = -1.00000 / sqrt2;
-            // powOFsqrt2_inv = 1;
+            data[0][0] = 1.00000;
+            data[0][1] = 1.00000;
+            data[1][0] = 1.00000;
+            data[1][1] = -1.00000;
+            powOFsqrt2_inv = 1;
         }
         else if (c == 'X')
         {
@@ -126,355 +126,367 @@ public:
             data[1][1] = std::complex<double>(0, 1);
         }
     }
-    inline Matrix(char a, char b)
-    {
-        if(a=='X'){
-            if(b=='X'){
-        data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000);
-        data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000);
-            }else if(b=='Y'){
-        data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000);
-        data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000);
-            }else if(b=='Z'){
-        data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000);
-        data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000);
-            }else if(b=='S'){
-        data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000);
-        data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-            }else if(b=='H'){
-        data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(-0.707107, 0.000000);
-        data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(0.707107, 0.000000);
-            }
-        }
-        else if(a=='Y'){
-            if(b=='X'){
-        data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000);
-        data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000);
-            }else if(b=='Y'){
-        data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -0.000000);
-        data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000);
-            }else if(b=='Z'){
-        data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000);
-        data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-            }else if(b=='S'){
-        data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000);
-        data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000);
-            }else if(b=='H'){
-        data[0][0] = std::complex<double>(0.000000, -0.707107); data[0][1] = std::complex<double>(0.000000, 0.707107);
-        data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.000000, 0.707107);
-            }
-        }
-        else if(a=='Z'){
-            if(b=='X'){
-        data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000);
-        data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000);
-            }else if(b=='Y'){
-        data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000);
-        data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-            }else if(b=='Z'){
-        data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000);
-        data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000);
-            }else if(b=='S'){
-        data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000);
-        data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000);
-            }else if(b=='H'){
-        data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000);
-        data[1][0] = std::complex<double>(-0.707107, 0.000000); data[1][1] = std::complex<double>(0.707107, 0.000000);
-            }
-        }
-        else if(a=='S'){
-            if(b=='X'){
-        data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000);
-        data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-            }else if(b=='Y'){
-        data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000);
-        data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000);
-            }else if(b=='Z'){
-        data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000);
-        data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000);
-            }else if(b=='S'){
-        data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000);
-        data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000);
-            }else if(b=='H'){
-        data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000);
-        data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.000000, -0.707107); 
-            }
-        }
-        else if(a=='H'){
-            if(b=='X'){
-        data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000);
-        data[1][0] = std::complex<double>(-0.707107, 0.000000); data[1][1] = std::complex<double>(0.707107, 0.000000);
-            }else if(b=='Y'){
-        data[0][0] = std::complex<double>(0.000000, 0.707107); data[0][1] = std::complex<double>(0.000000, -0.707107);
-        data[1][0] = std::complex<double>(0.000000, -0.707107); data[1][1] = std::complex<double>(0.000000, -0.707107);
-            }else if(b=='Z'){
-        data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(-0.707107, 0.000000);
-        data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(0.707107, 0.000000);
-            }else if(b=='S'){
-        data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.707107);
-        data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(0.000000, -0.707107);
-            }else if(b=='H'){
-        data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000);
-        data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000);
-            }
-        }
-        else
-        {
-            data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000);
-            data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000);
-        }
-    }
-    Matrix(char a, char b, char c){
-if('a'=='X'){if('b'=='X'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
-data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
-data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
-}}else if('b'=='Y'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
-data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
-data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+    inline Matrix(char a, char b){
+if(a=='X'){if(b=='X'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.000000, 0.707107); data[0][1] = std::complex<double>(0.000000, 0.707107); 
-data[1][0] = std::complex<double>(0.000000, -0.707107); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}}else if('b'=='Z'){if('c'=='X'){data[0][0] = std::complex<double>(-1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='Y'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(b=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
 data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+}else if(b=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
 data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(-0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(0.707107, 0.000000); 
-}}else if('b'=='S'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}}else if(a=='Y'){if(b=='X'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+}else if(b=='Y'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(-1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='H'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}}else if(a=='Z'){if(b=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(b=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
-data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
-data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.000000, 0.707107); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(0.707107, 0.000000); 
-}}else if('b'=='H'){if('c'=='X'){data[0][0] = std::complex<double>(-0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(0.707107, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, -0.707107); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.000000, -0.707107); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
-data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}}}else if('a'=='Y'){if('b'=='X'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+}else if(b=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}}else if(a=='S'){if(b=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+}else if(b=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
 data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.000000, -0.707107); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.000000, -0.707107); 
-}}else if('b'=='Y'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(b=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+powOFsqrt2_inv = 1;
+}}else if(a=='H'){if(b=='X'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(b=='Y'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+powOFsqrt2_inv = 1;
+}else if(b=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(b=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+powOFsqrt2_inv = 1;
+}else if(b=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+}}}
+
+Matrix(char a, char b, char c){
+if(a=='X'){if(b=='X'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
 data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
 data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
-}}else if('b'=='Z'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='Y'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(-1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
-data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.000000, 0.707107); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}}else if('b'=='S'){if('c'=='X'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='Z'){if(c=='X'){data[0][0] = std::complex<double>(-1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
-data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(-0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}}else if('b'=='H'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, 0.707107); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(-0.707107, 0.000000); data[0][1] = std::complex<double>(-0.707107, 0.000000); 
-data[1][0] = std::complex<double>(-0.707107, 0.000000); data[1][1] = std::complex<double>(0.707107, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.000000, -0.707107); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.000000, -0.707107); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.000000, -0.707107); data[0][1] = std::complex<double>(-0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
-data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}}}else if('a'=='Z'){if('b'=='X'){if('c'=='X'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
-data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(-0.000000, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
-data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(-0.707107, 0.000000); 
-data[1][0] = std::complex<double>(-0.707107, 0.000000); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
-}}else if('b'=='Y'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
-data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.000000, -0.707107); data[0][1] = std::complex<double>(0.000000, 0.707107); 
-data[1][0] = std::complex<double>(0.000000, -0.707107); data[1][1] = std::complex<double>(0.000000, -0.707107); 
-}}else if('b'=='Z'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
 data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
-data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
-}}else if('b'=='S'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
 data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(-1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='S'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, -0.707107); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}}else if('b'=='H'){if('c'=='X'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 0.707107); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(-0.707107, 0.000000); 
-data[1][0] = std::complex<double>(-0.707107, 0.000000); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.707107); 
-data[1][0] = std::complex<double>(-0.707107, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
-}}}else if('a'=='S'){if('b'=='X'){if('c'=='X'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
-data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(-0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}}else if('b'=='Y'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
-data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
-data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.000000, -0.707107); data[0][1] = std::complex<double>(0.000000, 0.707107); 
-data[1][0] = std::complex<double>(-0.707107, 0.000000); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
-}}else if('b'=='Z'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
-data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, -0.707107); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}}else if('b'=='S'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
-data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
-data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(-1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(-0.707107, 0.000000); data[1][1] = std::complex<double>(0.707107, 0.000000); 
-}}else if('b'=='H'){if('c'=='X'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, -0.707107); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 0.707107); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(0.707107, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(-0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.707107); 
-data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.707107, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
-}}}else if('a'=='H'){if('b'=='X'){if('c'=='X'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 0.707107); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(-0.707107, 0.000000); 
-data[1][0] = std::complex<double>(-0.707107, 0.000000); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.707107); 
-data[1][0] = std::complex<double>(-0.707107, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
-}}else if('b'=='Y'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, -0.707107); data[0][1] = std::complex<double>(0.000000, 0.707107); 
-data[1][0] = std::complex<double>(0.000000, -0.707107); data[1][1] = std::complex<double>(0.000000, -0.707107); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.000000, 0.707107); data[0][1] = std::complex<double>(0.000000, 0.707107); 
-data[1][0] = std::complex<double>(0.000000, -0.707107); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.000000, 0.707107); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, -0.707107); data[1][1] = std::complex<double>(0.707107, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
-data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}}else if('b'=='Z'){if('c'=='X'){data[0][0] = std::complex<double>(-0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(0.707107, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, -0.707107); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.000000, 0.707107); data[1][1] = std::complex<double>(0.000000, -0.707107); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
 data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}}else if('b'=='S'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, 0.707107); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.000000, -0.707107); data[1][1] = std::complex<double>(0.707107, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(-0.707107, 0.000000); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(0.000000, -0.707107); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.000000, -0.707107); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.707107); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(-0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(0.707107, 0.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.500000, 0.500000); data[0][1] = std::complex<double>(0.500000, -0.500000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='H'){if(c=='X'){data[0][0] = std::complex<double>(-1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='H'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}}}else if(a=='Y'){if(b=='X'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='Y'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='Z'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(-1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='S'){if(c=='X'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='H'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Y'){data[0][0] = std::complex<double>(-1.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Z'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='S'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='H'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}}}else if(a=='Z'){if(b=='X'){if(c=='X'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='Y'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='Z'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='S'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='H'){if(c=='X'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+}}}else if(a=='S'){if(b=='X'){if(c=='X'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='Y'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='Z'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='S'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}}else if(b=='H'){if(c=='X'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+}}}else if(a=='H'){if(b=='X'){if(c=='X'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+}}else if(b=='Y'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Y'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Z'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='S'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='H'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}}else if(b=='Z'){if(c=='X'){data[0][0] = std::complex<double>(-1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='H'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}}else if(b=='S'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Y'){data[0][0] = std::complex<double>(-1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(c=='H'){data[0][0] = std::complex<double>(0.500000, 0.500000); data[0][1] = std::complex<double>(0.500000, -0.500000); 
 data[1][0] = std::complex<double>(0.500000, -0.500000); data[1][1] = std::complex<double>(0.500000, 0.500000); 
-}}else if('b'=='H'){if('c'=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+}}else if(b=='H'){if(c=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
 data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+}else if(c=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
 data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
-}else if('c'=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
-}else if('c'=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(c=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
 data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
-}else if('c'=='H'){data[0][0] = std::complex<double>(0.707107, 0.000000); data[0][1] = std::complex<double>(0.707107, 0.000000); 
-data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex<double>(-0.707107, 0.000000); 
+}else if(c=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
 }}}}
 
         /*
@@ -511,71 +523,75 @@ data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex
         inline Matrix operator+(const Matrix &other) const
         {
             Matrix result;
-            std::complex<double> a11, a12, a21, a22,
-                b11, b12, b21, b22;
-            a11 = this->get(0, 0);
-            a12 = this->get(0, 1);
-            a21 = this->get(1, 0);
-            a22 = this->get(1, 1);
-            b11 = other.get(0, 0);
-            b12 = other.get(0, 1);
-            b21 = other.get(1, 0);
-            b22 = other.get(1, 1);
-            result.set(0, 0, a11 + b11);
-            result.set(0, 1, a12 + b12);
-            result.set(1, 0, a21 + b21);
-            result.set(1, 1, a22 + b22);
-            return result;
-            // Matrix result;
-            // for (int i = 0; i < 2; ++i) {
-            //     for (int j = 0; j < 2; ++j) {
-            //         result.set(i, j, this->get(i, j) + other.get(i, j));
-            //     }
-            // }
+            // std::complex<double> a11, a12, a21, a22,
+            //     b11, b12, b21, b22;
+            // a11 = this->get(0, 0);
+            // a12 = this->get(0, 1);
+            // a21 = this->get(1, 0);
+            // a22 = this->get(1, 1);
+            // b11 = other.get(0, 0);
+            // b12 = other.get(0, 1);
+            // b21 = other.get(1, 0);
+            // b22 = other.get(1, 1);
+            // result.set(0, 0, a11 + b11);
+            // result.set(0, 1, a12 + b12);
+            // result.set(1, 0, a21 + b21);
+            // result.set(1, 1, a22 + b22);
             // return result;
+            // Matrix result;
+            for (int i = 0; i < 2; ++i) {
+                for (int j = 0; j < 2; ++j) {
+                    result.set(i, j, this->get(i, j) + other.get(i, j));
+                }
+            }
+            return result;
         }
 
         inline Matrix operator*(const Matrix &other) const
         {
             Matrix result;
-            std::complex<double> a11, a12, a21, a22,
-                b11, b12, b21, b22;
-            a11 = this->get(0, 0);
-            a12 = this->get(0, 1);
-            a21 = this->get(1, 0);
-            a22 = this->get(1, 1);
-            b11 = other.get(0, 0);
-            b12 = other.get(0, 1);
-            b21 = other.get(1, 0);
-            b22 = other.get(1, 1);
-            result.set(0, 0, a11 * b11 + a12 * b21);
-            result.set(0, 1, a11 * b12 + a12 * b22);
-            result.set(1, 0, a21 * b11 + a22 * b21);
-            result.set(1, 1, a21 * b12 + a22 * b22);
             result.setPower(this->getPower() + other.getPower());
-            return result;
-            // Matrix result;
-            // for(int i = 0; i < 2; i++) {
-            //     for(int k = 0; k < 2; k++) {
-            //         for (int j = 0; j < 2; j++) {
-            //             result.set(i, j, result.get(i, j) + this->get(i, k) * other.get(k, j));
-            //         }
-            //     }
-            // }
-            // return result;
-        }
-        inline void print() const
-        {
-            std::cout << "Matrix:\n";
-            for (int i = 0; i < 2; ++i)
+            std::complex<double> k_=1.0000000;
+            if(result.getPower()>=2)
             {
-                for (int j = 0; j < 2; ++j)
-                {
-                    std::cout << data[i][j] << " ";
-                }
-                std::cout << "\n";
+                result.setPower(result.getPower() - 2);
+                k_=0.5000000;
             }
+            for(int i = 0; i < 2; i++) {
+                for(int k = 0; k < 2; k++) {
+                    for (int j = 0; j < 2; j++) {
+                        result.set(i, j,result.get(i, j) +k_*( this->get(i, k) * other.get(k, j)));
+                    }
+                }
+            }
+            return result;
+            // std::complex<double> a11, a12, a21, a22,
+            //     b11, b12, b21, b22;
+            // a11 = this->get(0, 0);
+            // a12 = this->get(0, 1);
+            // a21 = this->get(1, 0);
+            // a22 = this->get(1, 1);
+            // b11 = other.get(0, 0);
+            // b12 = other.get(0, 1);
+            // b21 = other.get(1, 0);
+            // b22 = other.get(1, 1);
+            // result.set(0, 0, a11 * b11 + a12 * b21);
+            // result.set(0, 1, a11 * b12 + a12 * b22);
+            // result.set(1, 0, a21 * b11 + a22 * b21);
+            // result.set(1, 1, a21 * b12 + a22 * b22);
+            // result.setPower(this->getPower() + other.getPower());
+            // return result;
+            
         }
+    inline void print() const {
+        for (int i = 0; i < 2; ++i) {
+            for (int j = 0; j < 2; ++j) {
+                printf("data[%d][%d] = std::complex<double>(%f, %f); ", i, j, data[i][j].real(), data[i][j].imag());
+            }
+            printf("\n");
+        }
+    }
+
 
     private:
         std::complex<double> data[2][2];
@@ -691,9 +707,9 @@ data[1][0] = std::complex<double>(0.707107, 0.000000); data[1][1] = std::complex
         {
             result = future.get() * result;
         }
-        // double k=qpow(0.5,result.getPower()/2)+result.getPower()%2*sqrt2_inv;
-        Alpha = result.get(0, 0);
-        Beta = result.get(1, 0);
+        std::complex<double> k=std::complex<double>(qpow(0.5,result.getPower()/2)+double(result.getPower()%2)*sqrt2_inv);
+        Alpha = result.get(0, 0)*k;
+        Beta = result.get(1, 0)*k;
 
         // 归一化量子态
         double norm = std::sqrt(std::abs(Alpha * std::conj(Alpha) + Beta * std::conj(Beta)));
