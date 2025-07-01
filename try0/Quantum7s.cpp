@@ -127,7 +127,6 @@ public:
 
 private:
     std::complex<double> data[2][2];
-    int num = 0;
 };
 Matrix qpow(Matrix* a, size_t b) {
     Matrix result('I');
@@ -145,8 +144,8 @@ Matrix qpow(Matrix* a, size_t b) {
 // }
 
 void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
-    int core =std::thread::hardware_concurrency();
-    size_t steps=N/core+(N%core!=0);
+    int core =std::thread::hardware_concurrency()+2;
+    size_t steps=(N+core-1)/(core);
     if (steps == 0) steps = 1;// 确保至少有一个步骤
     
     // printf("Core count: %d, Steps: %zu\n", core, steps); 
