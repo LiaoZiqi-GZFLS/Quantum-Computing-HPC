@@ -347,8 +347,8 @@ data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex
             futures.push_back(pool.enqueue([&Gates, i, groupSize, N]() {
                 size_t end = std::min(i + groupSize, N);
                 Matrix result('I');
-                for (size_t j = i; j < end; j += 2) {
-                    result = Matrix(Gates[j + 1], Gates[j]) * result;
+                for (size_t j = i+1; j < end; j += 2) {
+                    result = Matrix(Gates[j], Gates[j-1]) * result;
                 }
                 if((end-i)&1) {
                     result = Matrix(Gates[end-1]) * result;
