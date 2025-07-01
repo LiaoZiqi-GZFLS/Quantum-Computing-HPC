@@ -217,6 +217,16 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
         //     result = qpow(new Matrix(Gates[end-1]), l) * result;
         //     return result;
         // }));
+
+        // futures.push_back(pool.enqueue([&Gates, i, steps, N]() {
+        //     size_t end = std::min(i + steps, N);
+        //     Matrix result('I');
+        //     for (size_t j = i; j < end; ++j) {
+        //         result = Matrix(Gates[j]) * result;
+        //     }
+        //     return result;
+        // }));
+
         futures.push_back(pool.enqueue([&Gates, i, steps, N]() {
             size_t end = std::min(i + steps, N);
             Matrix result('I');
@@ -225,6 +235,7 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
             }
             return result;
         }));
+
 
     }
     // printf("Futures size: %zu\n", futures.size());
