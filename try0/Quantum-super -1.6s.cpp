@@ -89,7 +89,7 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
         }
     }
 
-    int core2 = 48*2;
+    int core2 = 48;
     size_t steps2 = partial_results.size()/core2 + (partial_results.size() % 48 != 0);
     if( steps2 == 0) steps2 = 1;
 
