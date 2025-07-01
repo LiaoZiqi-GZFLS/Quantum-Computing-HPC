@@ -8,6 +8,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <utility>
+#include <omp.h>
 
 class ThreadPool {
 public:
@@ -199,7 +200,7 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
     }
 
     // 归一化量子态
-    double norm = std::sqrt(std::abs(Alpha * std::conj(Alpha) + Beta * std::conj(Beta)));
-    Alpha /= norm;
-    Beta /= norm;
+    //double norm = std::sqrt(std::abs(Alpha * std::conj(Alpha) + Beta * std::conj(Beta)));
+    //Alpha /= norm;
+    //Beta /= norm;
 }
