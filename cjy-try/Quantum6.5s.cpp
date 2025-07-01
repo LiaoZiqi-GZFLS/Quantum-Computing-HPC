@@ -83,7 +83,7 @@ public:
             data[0][0] = 1/sqrt2; data[0][1] = 1/sqrt2;
             data[1][0] = 1/sqrt2; data[1][1] = -1/sqrt2;
             // powOFsqrt2_inv = 1;
-        } else if (c == 'X') { 
+        } else if (c == 'X') {
             data[0][0] = 0; data[0][1] = 1;
             data[1][0] = 1; data[1][1] = 0;
         } else if (c == 'Y') {
@@ -97,19 +97,6 @@ public:
             data[1][0] = 0; data[1][1] = std::complex<double>(0, 1);
         }
     }
-    /*
-    X*X=I
-    Z*X=i*Y
-    X*Y=Z
-    Y*Y=I
-    Z*Y=-i*X
-    Y*Z=i*X
-    Z*Z=I
-    X*S=-i*Y
-    S*S=Z
-    H*H=I
-    */
-
 
     inline std::complex<double> get(int i, int j) const {
         return data[i][j];
@@ -170,15 +157,6 @@ public:
         //     }
         // }
         // return result;
-    }
-    inline void print() const {
-        std::cout << "Matrix:\n";
-        for (int i = 0; i < 2; ++i) {
-            for (int j = 0; j < 2; ++j) {
-                std::cout << data[i][j] << " ";
-            }
-            std::cout << "\n";
-        }
     }
 
 private:
@@ -243,22 +221,6 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
             size_t end = std::min(i + steps, N);
             Matrix result('I');
             for (size_t j = i; j < end; ++j) {
-                if(Gates[j]==Gates[j+1]&&(Gates[j]=='X'||Gates[j]=='Y'||Gates[j]=='Z'||Gates[j]=='H')){
-                    j++;
-                    continue;
-                }
-                    /*
-    X*X=I
-    Z*X=i*Y
-    X*Y=Z
-    Y*Y=I
-    Z*Y=-i*X
-    Y*Z=i*X
-    Z*Z=I
-    X*S=-i*Y
-    S*S=Z
-    H*H=I
-    */
                 result = Matrix(Gates[j]) * result;
             }
             return result;
@@ -278,9 +240,4 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
     double norm = std::sqrt(std::abs(Alpha * std::conj(Alpha) + Beta * std::conj(Beta)));
     Alpha /= norm;
     Beta /= norm;
-}
-
-int main(int argc, char const *argv[])
-{
-    return 0;
 }

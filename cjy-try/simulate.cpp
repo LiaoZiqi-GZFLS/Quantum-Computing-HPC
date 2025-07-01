@@ -243,7 +243,7 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
             size_t end = std::min(i + steps, N);
             Matrix result('I');
             for (size_t j = i; j < end; ++j) {
-                if(Gates[j]==Gates[j+1]&&(Gates[j]=='X'||Gates[j]=='Y'||Gates[j]=='Z'||Gates[j]=='H')){
+                if(Gates[j]==Gates[j+1]&&(Gates[j]=='X'||Gates[j]=='Y'||Gates[j]=='Z'||Gates[j]=='H')&&j+1<end){
                     j++;
                     continue;
                 }
@@ -278,9 +278,4 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
     double norm = std::sqrt(std::abs(Alpha * std::conj(Alpha) + Beta * std::conj(Beta)));
     Alpha /= norm;
     Beta /= norm;
-}
-
-int main(int argc, char const *argv[])
-{
-    return 0;
 }
