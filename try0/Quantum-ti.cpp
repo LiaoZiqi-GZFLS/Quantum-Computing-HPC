@@ -1,109 +1,206 @@
 #include <iostream>
-#include <vector>
 #include <complex>
-#include <chrono>
+#include <vector>
+#include <thread>
+#include <future>
+#include <queue>
+#include <functional>
+#include <mutex>
+#include <condition_variable>
+#include <utility>
 #include <omp.h>
-#include <cstdlib>
-#include <ctime>
 
-// 定义2x2复数矩阵结构
-struct ComplexMatrix2x2 {
-    std::complex<double> data[2][2];
-    
-    // 默认构造函数，初始化为单位矩阵
-    ComplexMatrix2x2() {
-        data[0][0] = 1.0; data[0][1] = 0.0;
-        data[1][0] = 0.0; data[1][1] = 1.0;
+class ThreadPool {
+public:
+    ThreadPool(size_t threads) : stop(false) {
+        for (size_t i = 0; i < threads; ++i)
+            workers.emplace_back([this] {
+                for (;;) {
+                    std::function<void()> task;
+                    {
+                        std::unique_lock<std::mutex> lock(this->queue_mutex);
+                        this->condition.wait(lock, [this]{ return this->stop || !this->tasks.empty(); });
+                        if (this->stop && this->tasks.empty())
+                            return;
+                        task = std::move(this->tasks.front());
+                        this->tasks.pop();
+                    }
+                    task();
+                }
+            });
     }
-    
-    // 初始化构造函数
-    ComplexMatrix2x2(double a, double b, double c, double d) {
-        data[0][0] = a; data[0][1] = b;
-        data[1][0] = c; data[1][1] = d;
+
+    template<class F, class... Args>
+    auto enqueue(F&& f, Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type> {
+        using return_type = typename std::result_of<F(Args...)>::type;
+
+        auto task = std::make_shared<std::packaged_task<return_type()>>(
+            std::bind(std::forward<F>(f), std::forward<Args>(args)...)
+        );
+
+        std::future<return_type> res = task->get_future();
+        {
+            std::unique_lock<std::mutex> lock(queue_mutex);
+
+            if(stop)
+                throw std::runtime_error("enqueue on stopped ThreadPool");
+
+            tasks.emplace([task](){ (*task)(); });
+        }
+        condition.notify_one();
+        return res;
     }
-    
-    // 量子门构造函数
-    ComplexMatrix2x2(char gate) {
-        switch(gate) {
-            case 'I': // 单位矩阵
-                data[0][0] = 1.0; data[0][1] = 0.0;
-                data[1][0] = 0.0; data[1][1] = 1.0;
-                break;
-            case 'H': // 哈达玛门
-                data[0][0] = 1.0 / std::sqrt(2); data[0][1] = 1.0 / std::sqrt(2);
-                data[1][0] = 1.0 / std::sqrt(2); data[1][1] = -1.0 / std::sqrt(2);
-                break;
-            case 'X': // Pauli-X门
-                data[0][0] = 0.0; data[0][1] = 1.0;
-                data[1][0] = 1.0; data[1][1] = 0.0;
-                break;
-            case 'Y': // Pauli-Y门
-                data[0][0] = 0.0; data[0][1] = std::complex<double>(0, -1);
-                data[1][0] = std::complex<double>(0, 1); data[1][1] = 0.0;
-                break;
-            case 'Z': // Pauli-Z门
-                data[0][0] = 1.0; data[0][1] = 0.0;
-                data[1][0] = 0.0; data[1][1] = -1.0;
-                break;
-            default:
-                throw std::invalid_argument("未知的量子门类型");
+
+    ~ThreadPool() {
+        {
+            std::unique_lock<std::mutex> lock(queue_mutex);
+            stop = true;
+        }
+        condition.notify_all();
+        for(std::thread &worker: workers)
+            worker.join();
+    }
+
+private:
+    std::vector<std::thread> workers;
+    std::queue<std::function<void()>> tasks;
+
+    std::mutex queue_mutex;
+    std::condition_variable condition;
+    bool stop;
+};
+
+class Matrix {
+public:
+    Matrix(){}
+
+    Matrix(char c) {
+        if (c == 'I') {
+            data[0][0] = 1; data[0][1] = 0;
+            data[1][0] = 0; data[1][1] = 1;
+        } else if (c == 'H') {
+            data[0][0] = 1; data[0][1] = 1;
+            data[1][0] = 1; data[1][1] = -1;
+            num++;
+        } else if (c == 'X') {
+            data[0][0] = 0; data[0][1] = 1;
+            data[1][0] = 1; data[1][1] = 0;
+        } else if (c == 'Y') {
+            data[0][0] = 0; data[0][1] = -std::complex<double>(0, 1);
+            data[1][0] = std::complex<double>(0, 1); data[1][1] = 0;
+        } else if (c == 'Z') {
+            data[0][0] = 1; data[0][1] = 0;
+            data[1][0] = 0; data[1][1] = -1;
+        } else if (c == 'S') {
+            data[0][0] = 1; data[0][1] = 0;
+            data[1][0] = 0; data[1][1] = std::complex<double>(0, 1);
         }
     }
-    
-    // 矩阵乘法运算符重载
-    ComplexMatrix2x2 operator*(const ComplexMatrix2x2& other) const {
-        ComplexMatrix2x2 result;
+
+    std::complex<double> get(int i, int j) const {
+        return data[i][j];
+    }
+
+    void set(int i, int j, std::complex<double> value) {
+        data[i][j] = value;
+    }
+
+    int getNum() const {
+        return num;
+    }
+
+    /*Matrix operator+(const Matrix& other) const {
+        Matrix result;
         for (int i = 0; i < 2; ++i) {
             for (int j = 0; j < 2; ++j) {
-                result.data[i][j] = 0.0;
-                for (int k = 0; k < 2; ++k) {
-                    result.data[i][j] += data[i][k] * other.data[k][j];
-                }
+                result.set(i, j, this->get(i, j) + other.get(i, j));
             }
         }
         return result;
-    }
-    
-    // 打印矩阵
-    void print() const {
-        std::cout << "[[" << data[0][0] << ", " << data[0][1] << "],\n";
-        std::cout << " [" << data[1][0] << ", " << data[1][1] << "]]\n";
-    }
-};
+    }*/
 
-// 使用OpenMP并行计算矩阵链乘积
-ComplexMatrix2x2 parallelMultiply(const std::vector<ComplexMatrix2x2>& matrices) {
-    int n = matrices.size();
-    if (n == 0) return ComplexMatrix2x2();
+    Matrix operator*(const Matrix& other) const {
+        Matrix result;
+        result.num = this->num + other.num;
+        for(int i = 0; i < 2; i++) {
+            for(int k = 0; k < 2; k++) {
+                for (int j = 0; j < 2; j++) {
+                    result.set(i, j, result.get(i, j) + this->get(i, k) * other.get(k, j));
+                    
+                }
+            }
+        }
+        if(result.num>=2){
+            std::complex<double> c2(2, 0);
+            for(int i = 0; i < 2; i++) {
+                for(int j = 0; j < 2; j++) {
+                    result.set(i, j, result.get(i, j) / c2);
+                }
+            }
+            result.num -= 2;
+        }
+        return result;
+    }
+
+private:
+    std::complex<double> data[2][2];
+    int num = 0;
+};
+Matrix qpow(Matrix* a, size_t b) {
+    Matrix result('I');
+    while (b) {
+        if (b & 1) {
+            result = result * (*a);
+        }
+        b >>= 1;
+        a = new Matrix(*a * *a);
+    }
+    return result;
+}
+// Matrix work(ThreadPool& pool, size_t N, Matrix* matrices) {
     
-    // 使用二叉树归约方法进行并行计算
-    std::vector<ComplexMatrix2x2> partialProducts = matrices;
+// }
+
+void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
+    int core =std::thread::hardware_concurrency()*48;
+    size_t steps=N/core+(N%core!=0);
+    if (steps == 0) steps = 1;// 确保至少有一个步骤
     
-    // 并行归约计算
-    for (int step = 1; step < n; step *= 2) {
-        #pragma omp parallel for
-        for (int i = 0; i < n - step; i += 2 * step) {
-            partialProducts[i] = partialProducts[i] * partialProducts[i + step];
+    // printf("Core count: %d, Steps: %zu\n", core, steps); 
+    ThreadPool pool(core);
+    std::vector<std::future<Matrix>>futures;
+    for(size_t i=0;i<N;i+=steps){
+        futures.push_back(pool.enqueue([&Gates, i, steps, N]() {
+            size_t end = std::min(i + steps, N);
+            Matrix result('I');
+            for (size_t j = i; j < end; ++j) {
+                result = Matrix(Gates[j]) * result;
+            }
+            return result;
+        }));
+
+    }
+    // printf("Futures size: %zu\n", futures.size());
+    Matrix result('I');
+    for(auto& future : futures) {
+        result = future.get() * result;
+    }
+    Alpha = result.get(0, 0);
+    Beta = result.get(1, 0);
+    if(result.getNum() != 0) {
+        for(int i = 0; i < result.getNum()/2; i++) {
+            Alpha /= 2;
+            Beta /= 2;
+        }
+        if(result.getNum() % 2 == 1) {
+            std::complex<double> c2(std::sqrt(2.0), 0);
+            Alpha /= c2;
+            Beta /= c2;
         }
     }
-    
-    return partialProducts[0];
-}
 
-// simulate函数实现
-void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
-    // 将字符表示的量子门转换为矩阵
-    std::vector<ComplexMatrix2x2> matrices(N);
-    
-    #pragma omp parallel for
-    for (size_t i = 0; i < N; ++i) {
-        matrices[i] = ComplexMatrix2x2(Gates[i]);
-    }
-    
-    // 计算矩阵乘积
-    ComplexMatrix2x2 result = parallelMultiply(matrices);
-    
-    // 提取最终量子态
-    Alpha = result.data[0][0];
-    Beta = result.data[1][0];
+    // 归一化量子态
+    double norm = std::sqrt(std::abs(Alpha * std::conj(Alpha) + Beta * std::conj(Beta)));
+    Alpha /= norm;
+    Beta /= norm;
 }
