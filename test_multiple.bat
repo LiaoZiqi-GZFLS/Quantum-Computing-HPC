@@ -71,3 +71,5 @@ if /i "%input%" == "y" (
 endlocal
 
 pause>nul
+pause>nul
+pause>nul
