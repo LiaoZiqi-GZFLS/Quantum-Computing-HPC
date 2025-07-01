@@ -30,19 +30,19 @@ public:
         }
     }
 
-    std::complex<double> get(int i, int j) const {
+    inline std::complex<double> get(int i, int j) const {
         return data[i][j];
     }
 
-    void set(int i, int j, std::complex<double> value) {
+    inline void set(int i, int j, std::complex<double> value) {
         data[i][j] = value;
     }
 
-    int getNum() const {
+    inline int getNum() const {
         return num;
     }
 
-    Matrix operator*(const Matrix& other) const {
+    inline Matrix operator*(const Matrix& other) const {
         Matrix result;
         result.num = this->num + other.num;
         for(int i = 0; i < 2; i++) {
@@ -79,7 +79,7 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
     Matrix result('I');
 
     #pragma omp parallel for
-    for(size_t i=0;i<core*8;i++)
+    for(size_t i=0;i<core*2;i++)
     {
         size_t start = i * steps;
         size_t end = std::min(start + steps, N);
@@ -89,7 +89,7 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
         }
     }
 
-    int core2 = 48;
+    int core2 = 48*2;
     size_t steps2 = partial_results.size()/core2 + (partial_results.size() % 48 != 0);
     if( steps2 == 0) steps2 = 1;
 

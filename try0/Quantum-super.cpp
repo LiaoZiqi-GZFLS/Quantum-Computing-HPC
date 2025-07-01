@@ -30,35 +30,51 @@ public:
         }
     }
 
-    std::complex<double> get(int i, int j) const {
+    inline std::complex<double> get(int i, int j) const {
         return data[i][j];
     }
 
-    void set(int i, int j, std::complex<double> value) {
+    inline void set(int i, int j, std::complex<double> value) {
         data[i][j] = value;
     }
 
-    int getNum() const {
+    inline int getNum() const {
         return num;
     }
 
-    Matrix operator*(const Matrix& other) const {
+    inline Matrix operator*(const Matrix& other) const {
         Matrix result;
         result.num = this->num + other.num;
-        for(int i = 0; i < 2; i++) {
+        /*for(int i = 0; i < 2; i++) {
             for(int k = 0; k < 2; k++) {
                 for (int j = 0; j < 2; j++) {
                     result.set(i, j, result.get(i, j) + this->get(i, k) * other.get(k, j));
                 }
             }
-        }
+        }*/
+
+        result.set(0, 0, result.get(0, 0) + this->get(0, 0) * other.get(0, 0));
+        result.set(0, 0, result.get(0, 0) + this->get(0, 1) * other.get(1, 0));
+        result.set(0, 1, result.get(0, 1) + this->get(0, 0) * other.get(0, 1));
+        result.set(0, 1, result.get(0, 1) + this->get(0, 1) * other.get(1, 1));
+        result.set(1, 0, result.get(1, 0) + this->get(1, 0) * other.get(0, 0));
+        result.set(1, 0, result.get(1, 0) + this->get(1, 1) * other.get(1, 0));
+        result.set(1, 1, result.get(1, 1) + this->get(1, 0) * other.get(0, 1));
+        result.set(1, 1, result.get(1, 1) + this->get(1, 1) * other.get(1, 1));
+
+
         if(result.num>=2){
             std::complex<double> c2(2, 0);
-            for(int i = 0; i < 2; i++) {
+            /*for(int i = 0; i < 2; i++) {
                 for(int j = 0; j < 2; j++) {
                     result.set(i, j, result.get(i, j) / c2);
                 }
-            }
+            }*/
+            result.set(0, 0, result.get(i, j) / c2);
+            result.set(0, 1, result.get(i, j) / c2);
+            result.set(1, 0, result.get(i, j) / c2);
+            result.set(1, 1, result.get(i, j) / c2);    
+
             result.num -= 2;
         }
         return result;
