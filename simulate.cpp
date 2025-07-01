@@ -144,8 +144,8 @@ Matrix qpow(Matrix* a, size_t b) {
 // }
 
 void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
-    int core =std::thread::hardware_concurrency()+2;
-    size_t steps=(N+core-1)/(core);
+    int core =std::thread::hardware_concurrency();
+    size_t steps=N/core+(N%core!=0);
     if (steps == 0) steps = 1;// 确保至少有一个步骤
     
     // printf("Core count: %d, Steps: %zu\n", core, steps); 
@@ -156,6 +156,22 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
             size_t end = std::min(i + steps, N);
             Matrix result('I');
             for (size_t j = i; j < end; ++j) {
+                if(Gates[j]==Gates[j+1]&&(Gates[j]=='X'||Gates[j]=='Y'||Gates[j]=='Z'||Gates[j]=='H')&&j+1<end){
+                    j++;
+                    continue;
+                }
+                    /*
+    X*X=I
+    Z*X=i*Y
+    X*Y=Z
+    Y*Y=I
+    Z*Y=-i*X
+    Y*Z=i*X
+    Z*Z=I
+    X*S=-i*Y
+    S*S=Z
+    H*H=I
+    */
                 result = Matrix(Gates[j]) * result;
             }
             return result;
