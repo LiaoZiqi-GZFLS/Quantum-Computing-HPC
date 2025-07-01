@@ -8,12 +8,6 @@
 #include <mutex>
 #include <condition_variable>
 #include <utility>
-#include <cstddef>
-#include <cstdint>
-#include <chrono>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 
 class ThreadPool {
 public:
@@ -84,8 +78,8 @@ public:
             data[0][0] = 1; data[0][1] = 0;
             data[1][0] = 0; data[1][1] = 1;
         } else if (c == 'H') {
-            data[0][0] = 1.000000000000 / std::sqrt(2); data[0][1] = 1.000000000000 / std::sqrt(2);
-            data[1][0] = 1.000000000000 / std::sqrt(2); data[1][1] = -1.000000000000 / std::sqrt(2);
+            data[0][0] = 1 / std::sqrt(2); data[0][1] = 1 / std::sqrt(2);
+            data[1][0] = 1 / std::sqrt(2); data[1][1] = -1 / std::sqrt(2);
         } else if (c == 'X') {
             data[0][0] = 0; data[0][1] = 1;
             data[1][0] = 1; data[1][1] = 0;
@@ -133,12 +127,26 @@ public:
 
 private:
     std::complex<double> data[2][2];
+    int num = 0;
 };
+Matrix qpow(Matrix* a, size_t b) {
+    Matrix result('I');
+    while (b) {
+        if (b & 1) {
+            result = result * (*a);
+        }
+        b >>= 1;
+        a = new Matrix(*a * *a);
+    }
+    return result;
+}
+// Matrix work(ThreadPool& pool, size_t N, Matrix* matrices) {
+    
+// }
 
 void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
-    //begin
     int core =std::thread::hardware_concurrency();
-    size_t steps=N/core+(N%core!=0); // 每个线程处理的步骤数
+    size_t steps=N/core+(N%core!=0);
     if (steps == 0) steps = 1;// 确保至少有一个步骤
     
     // printf("Core count: %d, Steps: %zu\n", core, steps); 
