@@ -14,7 +14,6 @@
 #include <algorithm>
 #include <sched.h>
 #include <chrono>
-#include <cassert>
 
 // 高性能无锁队列（使用原子操作减少锁竞争）
 template<typename T>
@@ -157,30 +156,55 @@ private:
     std::atomic<bool> stop;
 };
 
-// 门定义：5个基本量子门
-using cd = std::complex<double>;
-constexpr cd I(0.0, 1.0);
-constexpr double SQRT1_2 = 0.7071067811865476;  // ≈ 1/sqrt(2)
-
-inline std::array<std::array<cd, 2>, 2> get_gate(char g) {
-    switch (g) {
-        case 'H': return {{{SQRT1_2, SQRT1_2}, {SQRT1_2, -SQRT1_2}}};
-        case 'X': return {{{0.0, 1.0}, {1.0, 0.0}}};
-        case 'Y': return {{{0.0, -I}, {I, 0.0}}};
-        case 'Z': return {{{1.0, 0.0}, {0.0, -1.0}}};
-        case 'S': return {{{1.0, 0.0}, {0.0, I}}};
-        default:  assert(false); return {{{1.0, 0.0}, {0.0, 1.0}}};
+// Matrix类保持不变
+class Matrix {
+public:
+    Matrix(){}
+    Matrix(char c) {
+        if (c == 'I') { data[0][0] = 1; data[0][1] = 0; data[1][0] = 0; data[1][1] = 1; }
+        else if (c == 'H') { data[0][0] = 1; data[0][1] = 1; data[1][0] = 1; data[1][1] = -1; num++; }
+        else if (c == 'X') { data[0][0] = 0; data[0][1] = 1; data[1][0] = 1; data[1][1] = 0; }
+        else if (c == 'Y') { data[0][0] = 0; data[0][1] = -std::complex<double>(0, 1); data[1][0] = std::complex<double>(0, 1); data[1][1] = 0; }
+        else if (c == 'Z') { data[0][0] = 1; data[0][1] = 0; data[1][0] = 0; data[1][1] = -1; }
+        else if (c == 'S') { data[0][0] = 1; data[0][1] = 0; data[1][0] = 0; data[1][1] = std::complex<double>(0, 1); }
     }
-}
+    std::complex<double> get(int i, int j) const { return data[i][j]; }
+    void set(int i, int j, std::complex<double> value) { data[i][j] = value; }
+    int getNum() const { return num; }
+    Matrix operator*(const Matrix& other) const {
+        Matrix result;
+        result.num = this->num + other.num;
+        for(int i = 0; i < 2; i++) {
+            for(int k = 0; k < 2; k++) {
+                for (int j = 0; j < 2; j++) {
+                    result.set(i, j, result.get(i, j) + this->get(i, k) * other.get(k, j));
+                }
+            }
+        }
+        if(result.num>=2){
+            std::complex<double> c2(2, 0);
+            for(int i = 0; i < 2; i++) {
+                for(int j = 0; j < 2; j++) {
+                    result.set(i, j, result.get(i, j) / c2);
+                }
+            }
+            result.num -= 2;
+        }
+        return result;
+    }
+private:
+    std::complex<double> data[2][2];
+    int num = 0;
+};
 
-// 复数矩阵乘法: C = A * B
-inline std::array<std::array<cd, 2>, 2> matmul(const std::array<std::array<cd, 2>, 2> &A,
-                                              const std::array<std::array<cd, 2>, 2> &B) {
-    std::array<std::array<cd, 2>, 2> C;
-    for (int i = 0; i < 2; ++i)
-        for (int j = 0; j < 2; ++j)
-            C[i][j] = A[i][0] * B[0][j] + A[i][1] * B[1][j];
-    return C;
+Matrix qpow(Matrix* a, size_t b) {
+    Matrix result('I');
+    while (b) {
+        if (b & 1) { result = result * (*a); }
+        b >>= 1;
+        a = new Matrix(*a * *a);
+    }
+    return result;
 }
 
 // 优化后的simulate函数
@@ -198,7 +222,7 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
     size_t num_tasks = (N + steps - 1) / steps;  // 向上取整计算任务数
     
     // 预分配结果容器
-    std::vector<std::future<std::array<std::array<cd, 2>, 2>>> futures;
+    std::vector<std::future<Matrix>> futures;
     futures.reserve(num_tasks);
     
     // 分配任务
@@ -207,22 +231,29 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
         
         // 捕获必要的变量
         futures.push_back(pool.enqueue([&Gates, i, end]() {
-            std::array<std::array<cd, 2>, 2> U = {{{1.0, 0.0}, {0.0, 1.0}}};
-            for (size_t j = end; j-- > i;) {
-                auto G = get_gate(Gates[j]);
-                U = matmul(G, U); // G × U
+            Matrix result('I');
+            for (size_t j = i; j < end; ++j) {
+                result = Matrix(Gates[j]) * result;
             }
-            return U;
+            return result;
         }));
     }
     
     // 合并结果
-    std::array<std::array<cd, 2>, 2> U = {{{1.0, 0.0}, {0.0, 1.0}}};
+    Matrix result('I');
     for(auto& future : futures) {
-        U = matmul(U, future.get());  // U = U × U_t
+        result = result * future.get();
     }
     
-    // 初始态 |0> = [1, 0]^T
-    Alpha = U[0][0];
-    Beta = U[1][0];
+    Alpha = result.get(0, 0);
+    Beta = result.get(1, 0);
+    
+    // 处理归一化
+    if(result.getNum() != 0) {
+        for(int i = 0; i < result.getNum()/2; i++) { Alpha /= 2; Beta /= 2; }
+        if(result.getNum() % 2 == 1) {
+            std::complex<double> c2(std::sqrt(2.0), 0);
+            Alpha /= c2; Beta /= c2;
+        }
+    }
 }

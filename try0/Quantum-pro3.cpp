@@ -68,6 +68,63 @@ public:
         }
     }
 
+    // 动态调整线程池大小
+    void resize(size_t newSize) {
+        if (newSize > workers.size()) {
+            for (size_t i = workers.size(); i < newSize; ++i) {
+                workers.emplace_back([this] {
+                    while (true) {
+                        std::function<void()> task;
+                        {
+                            std::unique_lock<std::mutex> lock(this->queue_mutex);
+                            this->condition.wait(lock, [this] { return this->stop || !this->tasks.empty(); });
+                            if (this->stop && this->tasks.empty()) {
+                                return;
+                            }
+                            task = std::move(this->tasks.front());
+                            this->tasks.pop();
+                        }
+                        if (task) {
+                            task();
+                        }
+                    }
+                });
+            }
+        } else if (newSize < workers.size()) {
+            {
+                std::unique_lock<std::mutex> lock(queue_mutex);
+                stop = true;
+            }
+            condition.notify_all();
+            for (size_t i = 0; i < workers.size(); ++i) {
+                if (workers[i].joinable()) {
+                    workers[i].join();
+                }
+            }
+            workers.clear();
+            stop = false;
+            for (size_t i = 0; i < newSize; ++i) {
+                workers.emplace_back([this] {
+                    while (true) {
+                        std::function<void()> task;
+                        {
+                            std::unique_lock<std::mutex> lock(this->queue_mutex);
+                            this->condition.wait(lock, [this] { return this->stop || !this->tasks.empty(); });
+                            if (this->stop && this->tasks.empty()) {
+                                return;
+                            }
+                            task = std::move(this->tasks.front());
+                            this->tasks.pop();
+                        }
+                        if (task) {
+                            task();
+                        }
+                    }
+                });
+            }
+        }
+    }
+
 private:
     std::vector<std::thread> workers;
     std::queue<std::function<void()>> tasks;
@@ -77,6 +134,7 @@ private:
     std::atomic<bool> stop; // 使用原子布尔变量来表示线程池是否停止
 };
 
+// 原有的Matrix类和simulate函数保持不变
 class Matrix {
 public:
     Matrix(){}
@@ -116,16 +174,6 @@ public:
         return num;
     }
 
-    /*Matrix operator+(const Matrix& other) const {
-        Matrix result;
-        for (int i = 0; i < 2; ++i) {
-            for (int j = 0; j < 2; ++j) {
-                result.set(i, j, this->get(i, j) + other.get(i, j));
-            }
-        }
-        return result;
-    }*/
-
     Matrix operator*(const Matrix& other) const {
         Matrix result;
         result.num = this->num + other.num;
@@ -153,6 +201,7 @@ private:
     std::complex<double> data[2][2];
     int num = 0;
 };
+
 Matrix qpow(Matrix* a, size_t b) {
     Matrix result('I');
     while (b) {
@@ -164,30 +213,26 @@ Matrix qpow(Matrix* a, size_t b) {
     }
     return result;
 }
-// Matrix work(ThreadPool& pool, size_t N, Matrix* matrices) {
-    
-// }
 
 void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
-    int core =std::thread::hardware_concurrency();
-    size_t steps=N/core+(N%core!=0);
-    if (steps == 0) steps = 1;// 确保至少有一个步骤
-    
-    // printf("Core count: %d, Steps: %zu\n", core, steps); 
+    int core = std::thread::hardware_concurrency();
+    size_t steps = N / core  + (N % core != 0);
+    if (steps == 0) steps = 1; // 确保至少有一个步骤
+
     ThreadPool pool(core);
-    std::vector<std::future<Matrix>>futures;
-    for(size_t i=0;i<N;i+=steps){
-        futures.push_back(pool.enqueue([&Gates, i, steps, N]() {
-            size_t end = std::min(i + steps, N);
+    std::vector<std::future<Matrix>> futures;
+    size_t numGates = std::min(N/4, (steps/2 > (size_t)10000)?steps/2:(size_t)10000); // 限制最大门数
+    for(size_t i = 0; i < N; i += numGates) {
+        futures.push_back(pool.enqueue([&Gates, i, numGates, N]() {
+            size_t end = std::min(i + numGates, N);
             Matrix result('I');
             for (size_t j = i; j < end; ++j) {
                 result = Matrix(Gates[j]) * result;
             }
             return result;
         }));
-
     }
-    // printf("Futures size: %zu\n", futures.size());
+
     Matrix result('I');
     for(auto& future : futures) {
         result = future.get() * result;
@@ -195,7 +240,7 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
     Alpha = result.get(0, 0);
     Beta = result.get(1, 0);
     if(result.getNum() != 0) {
-        for(int i = 0; i < result.getNum()/2; i++) {
+        for(int i = 0; i < result.getNum() / 2; i++) {
             Alpha /= 2;
             Beta /= 2;
         }
@@ -205,9 +250,4 @@ void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::com
             Beta /= c2;
         }
     }
-
-    // 归一化量子态
-    //double norm = std::sqrt(std::abs(Alpha * std::conj(Alpha) + Beta * std::conj(Beta)));
-    //Alpha /= norm;
-    //Beta /= norm;
 }
