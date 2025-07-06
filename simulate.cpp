@@ -8,92 +8,7 @@
 #include <mutex>
 #include <condition_variable>
 #include <utility>
-#include <atomic>
-#include <memory>
-#include <deque>
-#include <algorithm>
-#include <sched.h>
-#include <chrono>
-#include <cassert>
 
-// 高性能无锁队列（使用原子操作减少锁竞争）
-template<typename T>
-class LockFreeQueue {
-private:
-    struct Node {
-        T value;
-        std::atomic<Node*> next;
-        Node(const T& val) : value(val), next(nullptr) {}
-    };
-    
-    std::atomic<Node*> head;
-    std::atomic<Node*> tail;
-    std::atomic<size_t> count;
-
-<<<<<<< HEAD
-public:
-    LockFreeQueue() : head(nullptr), tail(nullptr), count(0) {}
-    
-    ~LockFreeQueue() {
-        T value; 
-        while (pop(value)); 
-    }
-    
-    void push(const T& value) {
-        Node* newNode = new Node(value);
-        Node* oldTail = tail.exchange(newNode);
-        if (oldTail) {
-            oldTail->next = newNode;
-        } else {
-            head = newNode;
-        }
-        count.fetch_add(1);
-    }
-    
-    bool pop(T& value) {
-        Node* oldHead = head.load();
-        while (oldHead) {
-            Node* next = oldHead->next.load();
-            if (head.compare_exchange_weak(oldHead, next)) {
-                value = std::move(oldHead->value);
-                delete oldHead;
-                count.fetch_sub(1);
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    bool empty() const {
-        return head.load() == nullptr;
-    }
-    
-    size_t size() const {
-        return count.load();
-    }
-};
-
-// 线程池单例模式
-class ThreadPool {
-private:
-    // 单例实现
-    ThreadPool(size_t threads) : stop(false) {
-        workers.reserve(threads);
-        tasks = std::make_unique<LockFreeQueue<std::function<void()>>>();
-        
-        // 创建并启动所有工作线程
-        for (size_t i = 0; i < threads; ++i) {
-            workers.emplace_back([this, i] {
-                // 设置线程亲和性
-                cpu_set_t cpuset;
-                CPU_ZERO(&cpuset);
-                CPU_SET(i, &cpuset);  // 直接按顺序分配CPU核心
-                if (pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset) != 0) {
-                    std::cerr << "Failed to set thread affinity to CPU " << i << std::endl;
-                }
-                
-                while (true) {
-=======
 class ThreadPool
 {
 public:
@@ -103,66 +18,15 @@ public:
             workers.emplace_back([this]
                                  {
                 for (;;) {
->>>>>>> 08be2a8fa006750cef8fdb2006faa055df63df3f
                     std::function<void()> task;
-                    if (tasks->pop(task)) {
-                        task();
-                    } else if (stop.load()) {
-                        return;
-                    } else {
-                        // 短暂休眠避免CPU空转
-                        std::this_thread::sleep_for(std::chrono::microseconds(10));
+                    {
+                        std::unique_lock<std::mutex> lock(this->queue_mutex);
+                        this->condition.wait(lock, [this]{ return this->stop || !this->tasks.empty(); });
+                        if (this->stop && this->tasks.empty())
+                            return;
+                        task = std::move(this->tasks.front());
+                        this->tasks.pop();
                     }
-<<<<<<< HEAD
-                }
-            });
-        }
-    }
-    
-    // 禁止拷贝和赋值
-    ThreadPool(const ThreadPool&) = delete;
-    ThreadPool& operator=(const ThreadPool&) = delete;
-    
-    ~ThreadPool() {
-        shutdown();
-    }
-    
-public:
-    static ThreadPool& getInstance(size_t threads = std::thread::hardware_concurrency()) {
-        static ThreadPool instance(threads);
-        return instance;
-    }
-    
-    template<class F, class... Args>
-    auto enqueue(F&& f, Args&&... args) -> std::future<typename std::result_of<F(Args...)>::type> {
-        using return_type = typename std::result_of<F(Args...)>::type;
-
-        auto task = std::make_shared<std::packaged_task<return_type()>>(
-            std::bind(std::forward<F>(f), std::forward<Args>(args)...)
-        );
-        
-        std::future<return_type> res = task->get_future();
-        tasks->push([task]() { (*task)(); });
-        return res;
-    }
-    
-    void shutdown() {
-        stop.store(true);
-        // 等待所有任务完成
-        while (!tasks->empty()) {
-            std::this_thread::yield();
-        }
-        // 等待所有线程退出
-        for (auto& worker : workers) {
-            if (worker.joinable()) {
-                worker.join();
-            }
-        }
-    }
-    
-    size_t size() const {
-        return workers.size();
-=======
                     task();
                 } });
     }
@@ -198,32 +62,19 @@ public:
         condition.notify_all();
         for (std::thread &worker : workers)
             worker.join();
->>>>>>> 08be2a8fa006750cef8fdb2006faa055df63df3f
     }
 
 private:
     std::vector<std::thread> workers;
-    std::unique_ptr<LockFreeQueue<std::function<void()>>> tasks;
-    std::atomic<bool> stop;
+    std::queue<std::function<void()>> tasks;
+
+    std::mutex queue_mutex;
+    std::condition_variable condition;
+    bool stop;
 };
 const double sqrt2 = std::sqrt(2.0);
 const double sqrt2_inv = 1.0 / sqrt2;
 
-<<<<<<< HEAD
-// 门定义：5个基本量子门
-using cd = std::complex<double>;
-constexpr cd I(0.0, 1.0);
-constexpr double SQRT1_2 = 0.7071067811865476;  // ≈ 1/sqrt(2)
-
-inline std::array<std::array<cd, 2>, 2> get_gate(char g) {
-    switch (g) {
-        case 'H': return {{{SQRT1_2, SQRT1_2}, {SQRT1_2, -SQRT1_2}}};
-        case 'X': return {{{0.0, 1.0}, {1.0, 0.0}}};
-        case 'Y': return {{{0.0, -I}, {I, 0.0}}};
-        case 'Z': return {{{1.0, 0.0}, {0.0, -1.0}}};
-        case 'S': return {{{1.0, 0.0}, {0.0, I}}};
-        default:  assert(false); return {{{1.0, 0.0}, {0.0, 1.0}}};
-=======
 class Matrix
 {
 public:
@@ -275,20 +126,78 @@ public:
             data[1][1] = std::complex<double>(0, 1);
         }
     }
-    
-
-    /*
-    X*X=I
-    Z*X=i*Y
-    X*Y=Z
-    Y*Y=I
-    Z*Y=-i*X
-    Y*Z=i*X
-    Z*Z=I
-    X*S=-i*Y
-    S*S=Z
-    H*H=I
-    */
+    inline Matrix(char a, char b){
+if(a=='X'){if(b=='X'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(b=='Y'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+}else if(b=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}}else if(a=='Y'){if(b=='X'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+}else if(b=='Y'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(b=='Z'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='S'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='H'){data[0][0] = std::complex<double>(0.000000, -1.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 1.000000); 
+powOFsqrt2_inv = 1;
+}}else if(a=='Z'){if(b=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+}else if(b=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+}else if(b=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}}else if(a=='S'){if(b=='X'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='Y'){data[0][0] = std::complex<double>(0.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, 0.000000); 
+}else if(b=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+}else if(b=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(-1.000000, 0.000000); 
+}else if(b=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 1.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+powOFsqrt2_inv = 1;
+}}else if(a=='H'){if(b=='X'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(1.000000, 0.000000); 
+data[1][0] = std::complex<double>(-1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(b=='Y'){data[0][0] = std::complex<double>(0.000000, 1.000000); data[0][1] = std::complex<double>(0.000000, -1.000000); 
+data[1][0] = std::complex<double>(0.000000, -1.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+powOFsqrt2_inv = 1;
+}else if(b=='Z'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(-1.000000, 0.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+powOFsqrt2_inv = 1;
+}else if(b=='S'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 1.000000); 
+data[1][0] = std::complex<double>(1.000000, 0.000000); data[1][1] = std::complex<double>(0.000000, -1.000000); 
+powOFsqrt2_inv = 1;
+}else if(b=='H'){data[0][0] = std::complex<double>(1.000000, 0.000000); data[0][1] = std::complex<double>(0.000000, 0.000000); 
+data[1][0] = std::complex<double>(0.000000, 0.000000); data[1][1] = std::complex<double>(1.000000, 0.000000); 
+}}}
+        /*
+        X*X=I
+        Z*X=i*Y
+        X*Y=Z
+        Y*Y=I
+        Z*Y=-i*X
+        Y*Z=i*X
+        Z*Z=I
+        X*S=-i*Y
+        S*S=Z
+        H*H=I
+        */
 
     inline std::complex<double> get(int i, int j) const
     {
@@ -327,10 +236,8 @@ public:
         // result.set(1, 1, a22 + b22);
         // return result;
         // Matrix result;
-        for (int i = 0; i < 2; ++i)
-        {
-            for (int j = 0; j < 2; ++j)
-            {
+        for (int i = 0; i < 2; ++i) {
+            for (int j = 0; j < 2; ++j) {
                 result.set(i, j, this->get(i, j) + other.get(i, j));
             }
         }
@@ -341,19 +248,16 @@ public:
     {
         Matrix result;
         result.setPower(this->getPower() + other.getPower());
-        std::complex<double> k_ = 1.0000000;
-        if (result.getPower() >= 2)
+        std::complex<double> k_=1.0000000;
+        if(result.getPower()>=2)
         {
             result.setPower(result.getPower() - 2);
-            k_ = 0.5000000;
+            k_=0.5000000;
         }
-        for (int i = 0; i < 2; i++)
-        {
-            for (int k = 0; k < 2; k++)
-            {
-                for (int j = 0; j < 2; j++)
-                {
-                    result.set(i, j, result.get(i, j) + k_ * (this->get(i, k) * other.get(k, j)));
+        for(int i = 0; i < 2; i++) {
+            for(int k = 0; k < 2; k++) {
+                for (int j = 0; j < 2; j++) {
+                    result.set(i, j,result.get(i, j) +k_*( this->get(i, k) * other.get(k, j)));
                 }
             }
         }
@@ -374,18 +278,17 @@ public:
         // result.set(1, 1, a21 * b12 + a22 * b22);
         // result.setPower(this->getPower() + other.getPower());
         // return result;
+        
     }
-    inline void print() const
-    {
-        for (int i = 0; i < 2; ++i)
-        {
-            for (int j = 0; j < 2; ++j)
-            {
-                printf("data[%d][%d] = std::complex<double>(%f, %f); ", i, j, data[i][j].real(), data[i][j].imag());
-            }
-            printf("\n");
+inline void print() const {
+    for (int i = 0; i < 2; ++i) {
+        for (int j = 0; j < 2; ++j) {
+            printf("data[%d][%d] = std::complex<double>(%f, %f); ", i, j, data[i][j].real(), data[i][j].imag());
         }
+        printf("\n");
     }
+}
+
 
 private:
     std::complex<double> data[2][2];
@@ -407,7 +310,6 @@ inline Matrix qpow(Matrix *a, size_t b)
             result = result * (*a);
         }
         b >>= 1;
->>>>>>> 08be2a8fa006750cef8fdb2006faa055df63df3f
     }
     return result;
 }
@@ -428,109 +330,9 @@ double qpow(double a, size_t b)
 // Matrix work(ThreadPool& pool, size_t N, Matrix* matrices) {
 
 // }
-std::complex<double> Data[25][2][2];
-size_t PowOFsqrt2_inv[25];
-
-void initMemory()
-{Data[0][0][0] = std::complex<double>(1.000000, 0.000000); Data[0][0][1] = std::complex<double>(0.000000, 0.000000); 
-Data[0][1][0] = std::complex<double>(0.000000, 0.000000); Data[0][1][1] = std::complex<double>(1.000000, 0.000000); 
-PowOFsqrt2_inv[0] = 0;
-Data[1][0][0] = std::complex<double>(0.000000, 1.000000); Data[1][0][1] = std::complex<double>(0.000000, 0.000000); 
-Data[1][1][0] = std::complex<double>(0.000000, 0.000000); Data[1][1][1] = std::complex<double>(0.000000, -1.000000); 
-PowOFsqrt2_inv[1] = 0;
-Data[2][0][0] = std::complex<double>(0.000000, 0.000000); Data[2][0][1] = std::complex<double>(-1.000000, 0.000000); 
-Data[2][1][0] = std::complex<double>(1.000000, 0.000000); Data[2][1][1] = std::complex<double>(0.000000, 0.000000); 
-PowOFsqrt2_inv[2] = 0;
-Data[3][0][0] = std::complex<double>(0.000000, 0.000000); Data[3][0][1] = std::complex<double>(0.000000, 1.000000); 
-Data[3][1][0] = std::complex<double>(1.000000, 0.000000); Data[3][1][1] = std::complex<double>(0.000000, 0.000000); 
-PowOFsqrt2_inv[3] = 0;
-Data[4][0][0] = std::complex<double>(1.000000, 0.000000); Data[4][0][1] = std::complex<double>(-1.000000, 0.000000); 
-Data[4][1][0] = std::complex<double>(1.000000, 0.000000); Data[4][1][1] = std::complex<double>(1.000000, 0.000000); 
-PowOFsqrt2_inv[4] = 1;
-Data[5][0][0] = std::complex<double>(0.000000, -1.000000); Data[5][0][1] = std::complex<double>(0.000000, 0.000000); 
-Data[5][1][0] = std::complex<double>(0.000000, 0.000000); Data[5][1][1] = std::complex<double>(0.000000, 1.000000); 
-PowOFsqrt2_inv[5] = 0;
-Data[6][0][0] = std::complex<double>(1.000000, 0.000000); Data[6][0][1] = std::complex<double>(0.000000, 0.000000); 
-Data[6][1][0] = std::complex<double>(0.000000, 0.000000); Data[6][1][1] = std::complex<double>(1.000000, 0.000000); 
-PowOFsqrt2_inv[6] = 0;
-Data[7][0][0] = std::complex<double>(0.000000, 0.000000); Data[7][0][1] = std::complex<double>(0.000000, 1.000000); 
-Data[7][1][0] = std::complex<double>(0.000000, 1.000000); Data[7][1][1] = std::complex<double>(0.000000, 0.000000); 
-PowOFsqrt2_inv[7] = 0;
-Data[8][0][0] = std::complex<double>(0.000000, 0.000000); Data[8][0][1] = std::complex<double>(1.000000, 0.000000); 
-Data[8][1][0] = std::complex<double>(0.000000, 1.000000); Data[8][1][1] = std::complex<double>(0.000000, 0.000000); 
-PowOFsqrt2_inv[8] = 0;
-Data[9][0][0] = std::complex<double>(0.000000, -1.000000); Data[9][0][1] = std::complex<double>(0.000000, 1.000000); 
-Data[9][1][0] = std::complex<double>(0.000000, 1.000000); Data[9][1][1] = std::complex<double>(0.000000, 1.000000); 
-PowOFsqrt2_inv[9] = 1;
-Data[10][0][0] = std::complex<double>(0.000000, 0.000000); Data[10][0][1] = std::complex<double>(1.000000, 0.000000); 
-Data[10][1][0] = std::complex<double>(-1.000000, 0.000000); Data[10][1][1] = std::complex<double>(0.000000, 0.000000); 
-PowOFsqrt2_inv[10] = 0;
-Data[11][0][0] = std::complex<double>(0.000000, 0.000000); Data[11][0][1] = std::complex<double>(0.000000, -1.000000); 
-Data[11][1][0] = std::complex<double>(0.000000, -1.000000); Data[11][1][1] = std::complex<double>(0.000000, 0.000000); 
-PowOFsqrt2_inv[11] = 0;
-Data[12][0][0] = std::complex<double>(1.000000, 0.000000); Data[12][0][1] = std::complex<double>(0.000000, 0.000000); 
-Data[12][1][0] = std::complex<double>(0.000000, 0.000000); Data[12][1][1] = std::complex<double>(1.000000, 0.000000); 
-PowOFsqrt2_inv[12] = 0;
-Data[13][0][0] = std::complex<double>(1.000000, 0.000000); Data[13][0][1] = std::complex<double>(0.000000, 0.000000); 
-Data[13][1][0] = std::complex<double>(0.000000, 0.000000); Data[13][1][1] = std::complex<double>(0.000000, -1.000000); 
-PowOFsqrt2_inv[13] = 0;
-Data[14][0][0] = std::complex<double>(1.000000, 0.000000); Data[14][0][1] = std::complex<double>(1.000000, 0.000000); 
-Data[14][1][0] = std::complex<double>(-1.000000, 0.000000); Data[14][1][1] = std::complex<double>(1.000000, 0.000000); 
-PowOFsqrt2_inv[14] = 1;
-Data[15][0][0] = std::complex<double>(0.000000, 0.000000); Data[15][0][1] = std::complex<double>(1.000000, 0.000000); 
-Data[15][1][0] = std::complex<double>(0.000000, 1.000000); Data[15][1][1] = std::complex<double>(0.000000, 0.000000); 
-PowOFsqrt2_inv[15] = 0;
-Data[16][0][0] = std::complex<double>(0.000000, 0.000000); Data[16][0][1] = std::complex<double>(0.000000, -1.000000); 
-Data[16][1][0] = std::complex<double>(-1.000000, 0.000000); Data[16][1][1] = std::complex<double>(0.000000, 0.000000); 
-PowOFsqrt2_inv[16] = 0;
-Data[17][0][0] = std::complex<double>(1.000000, 0.000000); Data[17][0][1] = std::complex<double>(0.000000, 0.000000); 
-Data[17][1][0] = std::complex<double>(0.000000, 0.000000); Data[17][1][1] = std::complex<double>(0.000000, -1.000000); 
-PowOFsqrt2_inv[17] = 0;
-Data[18][0][0] = std::complex<double>(1.000000, 0.000000); Data[18][0][1] = std::complex<double>(0.000000, 0.000000); 
-Data[18][1][0] = std::complex<double>(0.000000, 0.000000); Data[18][1][1] = std::complex<double>(-1.000000, 0.000000); 
-PowOFsqrt2_inv[18] = 0;
-Data[19][0][0] = std::complex<double>(1.000000, 0.000000); Data[19][0][1] = std::complex<double>(1.000000, 0.000000); 
-Data[19][1][0] = std::complex<double>(0.000000, 1.000000); Data[19][1][1] = std::complex<double>(0.000000, -1.000000); 
-PowOFsqrt2_inv[19] = 1;
-Data[20][0][0] = std::complex<double>(1.000000, 0.000000); Data[20][0][1] = std::complex<double>(1.000000, 0.000000); 
-Data[20][1][0] = std::complex<double>(-1.000000, 0.000000); Data[20][1][1] = std::complex<double>(1.000000, 0.000000); 
-PowOFsqrt2_inv[20] = 1;
-Data[21][0][0] = std::complex<double>(0.000000, 1.000000); Data[21][0][1] = std::complex<double>(0.000000, -1.000000); 
-Data[21][1][0] = std::complex<double>(0.000000, -1.000000); Data[21][1][1] = std::complex<double>(0.000000, -1.000000); 
-PowOFsqrt2_inv[21] = 1;
-Data[22][0][0] = std::complex<double>(1.000000, 0.000000); Data[22][0][1] = std::complex<double>(-1.000000, 0.000000); 
-Data[22][1][0] = std::complex<double>(1.000000, 0.000000); Data[22][1][1] = std::complex<double>(1.000000, 0.000000); 
-PowOFsqrt2_inv[22] = 1;
-Data[23][0][0] = std::complex<double>(1.000000, 0.000000); Data[23][0][1] = std::complex<double>(0.000000, 1.000000); 
-Data[23][1][0] = std::complex<double>(1.000000, 0.000000); Data[23][1][1] = std::complex<double>(0.000000, -1.000000); 
-PowOFsqrt2_inv[23] = 1;
-Data[24][0][0] = std::complex<double>(1.000000, 0.000000); Data[24][0][1] = std::complex<double>(0.000000, 0.000000); 
-Data[24][1][0] = std::complex<double>(0.000000, 0.000000); Data[24][1][1] = std::complex<double>(1.000000, 0.000000); 
-PowOFsqrt2_inv[24] = 0;
-}
-inline int getId(char c)
-{
-    if (c == 'X') return 0;
-    if (c == 'Y') return 1;
-    if (c == 'Z') return 2;
-    if (c == 'S') return 3;
-    if (c == 'H') return 4;
-    return -1; // Invalid character
-}
-Matrix calculate(char a, char b){
-    Matrix result=Matrix('I');
-    int id=getId(a)*5+getId(b);
-    result.set(0,0,Data[id][0][0]);
-    result.set(0,1,Data[id][0][1]);
-    result.set(1,0,Data[id][1][0]);
-    result.set(1,1,Data[id][1][1]);
-    result.setPower(PowOFsqrt2_inv[id]);
-    return result;
-}
 
 void simulate(size_t N, const char *Gates, std::complex<double> &Alpha, std::complex<double> &Beta)
 {
-    initMemory();
     int core = std::thread::hardware_concurrency();
     int group = core; // 包的大小
     size_t groupSize = N / group + (N % group != 0);
@@ -542,17 +344,18 @@ void simulate(size_t N, const char *Gates, std::complex<double> &Alpha, std::com
     std::vector<std::future<Matrix>> futures;
     for (size_t i = 0; i < N; i += groupSize)
     {
-        futures.push_back(pool.enqueue([&Gates, i, groupSize, N]()
-                                       {
-                size_t end = std::min(i + groupSize, N);
-                Matrix result('I');
-                for (size_t j = i+1; j < end; j += 2) {
-                    result =calculate(Gates[j], Gates[j-1]) * result;
-                }
-                if((end-i)&1) {
-                    result = Matrix(Gates[end-1]) * result;
-                }
-                return result; }));
+        futures.push_back(pool.enqueue([&Gates, i, groupSize, N]() {
+            size_t end = std::min(i + groupSize, N);
+            Matrix result('I');
+            for (size_t j = i+1; j < end; j += 2) {
+                result = Matrix(Gates[j], Gates[j-1]) * result;
+            }
+            if((end-i)&1) {
+                result = Matrix(Gates[end-1]) * result;
+            }
+            return result;
+        }));
+
 
         // futures.push_back(pool.enqueue([&Gates, i, groupSize, N]() {
         //     size_t end = std::min(i + groupSize, N);
@@ -590,6 +393,8 @@ void simulate(size_t N, const char *Gates, std::complex<double> &Alpha, std::com
         //     result = Matrix(Gates[j]) * result;
         // }
         // return result; }));
+        
+        
     }
     // printf("Futures size: %zu\n", futures.size());
     Matrix result('I');
@@ -597,66 +402,12 @@ void simulate(size_t N, const char *Gates, std::complex<double> &Alpha, std::com
     {
         result = future.get() * result;
     }
-    std::complex<double> k = std::complex<double>(qpow(0.5, result.getPower() / 2) + double(result.getPower() % 2) * sqrt2_inv);
-    Alpha = result.get(0, 0) * k;
-    Beta = result.get(1, 0) * k;
+    std::complex<double> k=std::complex<double>(qpow(0.5,result.getPower()/2)+double(result.getPower()%2)*sqrt2_inv);
+    Alpha = result.get(0, 0)*k;
+    Beta = result.get(1, 0)*k;
 
     // 归一化量子态
     double norm = std::sqrt(std::abs(Alpha * std::conj(Alpha) + Beta * std::conj(Beta)));
     Alpha /= norm;
     Beta /= norm;
-}
-
-// 复数矩阵乘法: C = A * B
-inline std::array<std::array<cd, 2>, 2> matmul(const std::array<std::array<cd, 2>, 2> &A,
-                                              const std::array<std::array<cd, 2>, 2> &B) {
-    std::array<std::array<cd, 2>, 2> C;
-    for (int i = 0; i < 2; ++i)
-        for (int j = 0; j < 2; ++j)
-            C[i][j] = A[i][0] * B[0][j] + A[i][1] * B[1][j];
-    return C;
-}
-
-// 优化后的simulate函数
-void simulate(size_t N, const char* Gates, std::complex<double>& Alpha, std::complex<double>& Beta) {
-    // 使用单例线程池，避免重复创建
-    ThreadPool& pool = ThreadPool::getInstance(48);
-    
-    // 根据总计算量动态调整任务块大小
-    size_t min_task_size = 1000;  // 最小任务块大小，避免任务过多
-    size_t max_tasks = 1024;      // 最大任务数，避免队列过长
-    
-    size_t steps = std::max(min_task_size, N / max_tasks);
-    steps = std::max<size_t>(1, steps);  // 确保至少有一个步骤
-    
-    size_t num_tasks = (N + steps - 1) / steps;  // 向上取整计算任务数
-    
-    // 预分配结果容器
-    std::vector<std::future<std::array<std::array<cd, 2>, 2>>> futures;
-    futures.reserve(num_tasks);
-    
-    // 分配任务
-    for(size_t i = 0; i < N; i += steps) {
-        size_t end = std::min(i + steps, N);
-        
-        // 捕获必要的变量
-        futures.push_back(pool.enqueue([&Gates, i, end]() {
-            std::array<std::array<cd, 2>, 2> U = {{{1.0, 0.0}, {0.0, 1.0}}};
-            for (size_t j = end; j-- > i;) {
-                auto G = get_gate(Gates[j]);
-                U = matmul(G, U); // G × U
-            }
-            return U;
-        }));
-    }
-    
-    // 合并结果
-    std::array<std::array<cd, 2>, 2> U = {{{1.0, 0.0}, {0.0, 1.0}}};
-    for(auto& future : futures) {
-        U = matmul(U, future.get());  // U = U × U_t
-    }
-    
-    // 初始态 |0> = [1, 0]^T
-    Alpha = U[0][0];
-    Beta = U[1][0];
 }
