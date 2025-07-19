@@ -7,11 +7,11 @@ struct MatKey {
 };
 
 constexpr MatKey kAll[192] = {
-    { std::complex<double>(1.0, 0.0), std::complex<double>(1.0, 0.0), std::complex<double>(1.0, 0.0), std::complex<double>(-1.0, 0.0), 1 },//H 0
-    { std::complex<double>(0.0, 0.0), std::complex<double>(1.0, 0.0), std::complex<double>(1.0, 0.0), std::complex<double>(0.0, 0.0), 0 },//X 1
-    { std::complex<double>(0.0, 0.0), std::complex<double>(0.0, -1.0), std::complex<double>(0.0, 1.0), std::complex<double>(0.0, 0.0), 0 },//Y 2
-    { std::complex<double>(1.0, 0.0), std::complex<double>(0.0, 0.0), std::complex<double>(0.0, 0.0), std::complex<double>(-1.0, 0.0), 0 },//Z 3
-    { std::complex<double>(1.0, 0.0), std::complex<double>(0.0, 0.0), std::complex<double>(0.0, 0.0), std::complex<double>(0.0, 1.0), 0 },//S 4
+    { std::complex<double>(1.0, 0.0), std::complex<double>(1.0, 0.0), std::complex<double>(1.0, 0.0), std::complex<double>(-1.0, 0.0), 1 },
+    { std::complex<double>(0.0, 0.0), std::complex<double>(1.0, 0.0), std::complex<double>(1.0, 0.0), std::complex<double>(0.0, 0.0), 0 },
+    { std::complex<double>(0.0, 0.0), std::complex<double>(0.0, -1.0), std::complex<double>(0.0, 1.0), std::complex<double>(0.0, 0.0), 0 },
+    { std::complex<double>(1.0, 0.0), std::complex<double>(0.0, 0.0), std::complex<double>(0.0, 0.0), std::complex<double>(-1.0, 0.0), 0 },
+    { std::complex<double>(1.0, 0.0), std::complex<double>(0.0, 0.0), std::complex<double>(0.0, 0.0), std::complex<double>(0.0, 1.0), 0 },
     { std::complex<double>(0.0, 1.0), std::complex<double>(0.0, -1.0), std::complex<double>(0.0, 1.0), std::complex<double>(0.0, 1.0), 1 },
     { std::complex<double>(1.0, 0.0), std::complex<double>(-1.0, 0.0), std::complex<double>(-1.0, 0.0), std::complex<double>(-1.0, 0.0), 1 },
     { std::complex<double>(1.0, 0.0), std::complex<double>(0.0, 1.0), std::complex<double>(-1.0, 0.0), std::complex<double>(0.0, 1.0), 1 },
@@ -43,7 +43,7 @@ constexpr MatKey kAll[192] = {
     { std::complex<double>(0.0, 0.0), std::complex<double>(0.0, 1.0), std::complex<double>(-1.0, 0.0), std::complex<double>(0.0, 0.0), 0 },
     { std::complex<double>(0.0, 0.0), std::complex<double>(1.0, 0.0), std::complex<double>(0.0, -1.0), std::complex<double>(0.0, 0.0), 0 },
     { std::complex<double>(1.0, 0.0), std::complex<double>(1.0, 0.0), std::complex<double>(0.0, -1.0), std::complex<double>(0.0, 1.0), 1 },
-    { std::complex<double>(1.0, 0.0), std::complex<double>(0.0, 0.0), std::complex<double>(0.0, 0.0), std::complex<double>(1.0, 0.0), 0 },//I 36
+    { std::complex<double>(1.0, 0.0), std::complex<double>(0.0, 0.0), std::complex<double>(0.0, 0.0), std::complex<double>(1.0, 0.0), 0 },
     { std::complex<double>(1.0, 0.0), std::complex<double>(0.0, 1.0), std::complex<double>(0.0, 1.0), std::complex<double>(1.0, 0.0), 1 },
     { std::complex<double>(0.0, -1.0), std::complex<double>(0.0, 1.0), std::complex<double>(-1.0, 0.0), std::complex<double>(-1.0, 0.0), 1 },
     { std::complex<double>(0.0, 0.0), std::complex<double>(1.0, 0.0), std::complex<double>(-1.0, 0.0), std::complex<double>(0.0, 0.0), 0 },

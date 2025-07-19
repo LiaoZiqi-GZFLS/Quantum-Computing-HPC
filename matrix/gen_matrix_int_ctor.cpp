@@ -171,6 +171,73 @@ int main() {
                "}\n";
     }
 
-    cout << "matrix_int_ctor.inc & matrix_mul_table.inc & matrix_lookup.inc generated.\n";
+        /* 4. 生成 matrix_mul_table_4x96.inc（4x96x96 切分版） */
+    {   
+        vector<vector<int>> mul(N, vector<int>(N));
+        for(int i=0;i<N;++i)
+            for(int j=0;j<N;++j){
+                M prod = pool[i] * pool[j];
+                mul[i][j] = lookup(pool, prod);
+            }
+
+        const int HALF = 96;
+        vector<vector<vector<int>>> mul4(4, vector<vector<int>>(HALF, vector<int>(HALF)));
+
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                int block = ((i >= HALF) << 1) | (j >= HALF);
+                int ii = i % HALF;
+                int jj = j % HALF;
+                mul4[block][ii][jj] = mul[i][j];
+            }
+        }
+
+        ofstream inc("matrix_mul_table_4x96.inc");
+        inc << "constexpr size_t MATRIX_MUL_4x96[4][" << HALF << "][" << HALF << "] = {\n";
+        for (int block = 0; block < 4; ++block) {
+            inc << "    { // block " << block << "\n";
+            for (int i = 0; i < HALF; ++i) {
+                inc << "        { ";
+                for (int j = 0; j < HALF; ++j) {
+                    inc << mul4[block][i][j];
+                    if (j != HALF - 1) inc << ", ";
+                }
+                inc << " }";
+                if (i != HALF - 1) inc << ",";
+                inc << "\n";
+            }
+            inc << "    }";
+            if (block != 3) inc << ",";
+            inc << "\n";
+        }
+        inc << "};\n";
+    }
+
+        /* 5. 生成 matrix_mul_table_flat.inc（一维数组版） */
+    {
+        vector<vector<int>> mul(N, vector<int>(N));
+        for(int i=0;i<N;++i)
+            for(int j=0;j<N;++j){
+                M prod = pool[i] * pool[j];
+                mul[i][j] = lookup(pool, prod);
+            }
+        
+        const int TOTAL = N * N;
+        vector<int> flat(TOTAL);
+        for (int i = 0; i < N; ++i)
+            for (int j = 0; j < N; ++j)
+                flat[i * N + j] = mul[i][j];
+
+        ofstream inc("matrix_mul_table_flat.inc");
+        inc << "constexpr size_t MATRIX_MUL_FLAT[" << TOTAL << "] = {\n";
+        for (int i = 0; i < TOTAL; ++i) {
+            inc << flat[i];
+            if (i != TOTAL - 1) inc << ", ";
+            //if ((i + 1) % 16 == 0) inc << "\n"; // 每行16个元素，便于阅读
+        }
+        inc << "\n};\n";
+    }
+
+    cout << "matrix_int_ctor.inc & matrix_mul_table.inc & matrix_lookup.inc & matrix_mul_table4x6x96.inc & matrix_mul_table_flat.inc generated.\n";
     return 0;
 }
