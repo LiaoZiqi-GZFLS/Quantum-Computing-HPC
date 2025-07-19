@@ -130,72 +130,166 @@ Beta /= norm;
 ```
 ### 线程池以及多线程处理
 使用线程池来处理多线程计算，避免线程创建和销毁的开销。每个线程处理一部分（一个计算包）量子门的计算。
-线程部分（ai生成的线程池class）
-``` c++
-class ThreadPool
-{
+线程部分(使用ai生成)
+#### 提示词 
+c++开线程池并进行运算
+#### ai的答案（文心一言）
+##### C++ 线程池实现与运算任务分发
+
+下面是一个完整的 C++ 线程池实现，可以用于分发和执行并行运算任务。这个实现使用了 C++11 标准库中的线程、互斥量、条件变量等特性。
+
+######  线程池实现
+
+```cpp
+#include <iostream>
+#include <vector>
+#include <thread>
+#include <queue>
+#include <mutex>
+#include <condition_variable>
+#include <functional>
+#include <future>
+#include <stdexcept>
+
+class ThreadPool {
 public:
-    ThreadPool(size_t threads) : stop(false)
-    {
-        for (size_t i = 0; i < threads; ++i)
-            workers.emplace_back([this]
-                                 {
-                for (;;) {
+    // 构造函数，启动指定数量的工作线程
+    ThreadPool(size_t threads) : stop(false) {
+        for(size_t i = 0; i < threads; ++i) {
+            workers.emplace_back([this] {
+                while(true) {
                     std::function<void()> task;
+                    
                     {
                         std::unique_lock<std::mutex> lock(this->queue_mutex);
-                        this->condition.wait(lock, [this]{ return this->stop || !this->tasks.empty(); });
-                        if (this->stop && this->tasks.empty())
+                        this->condition.wait(lock, [this] { 
+                            return this->stop || !this->tasks.empty(); 
+                        });
+                        
+                        if(this->stop && this->tasks.empty())
                             return;
+                            
                         task = std::move(this->tasks.front());
                         this->tasks.pop();
                     }
+                    
                     task();
-                } });
+                }
+            });
+        }
     }
-
-    template <class F, class... Args>
-    auto enqueue(F &&f, Args &&...args) -> std::future<typename std::result_of<F(Args...)>::type>
-    {
+    
+    // 添加任务到线程池，返回future对象
+    template<class F, class... Args>
+    auto enqueue(F&& f, Args&&... args) 
+        -> std::future<typename std::result_of<F(Args...)>::type> {
         using return_type = typename std::result_of<F(Args...)>::type;
-
+        
         auto task = std::make_shared<std::packaged_task<return_type()>>(
-            std::bind(std::forward<F>(f), std::forward<Args>(args)...));
-
+            std::bind(std::forward<F>(f), std::forward<Args>(args)...)
+        );
+            
         std::future<return_type> res = task->get_future();
         {
             std::unique_lock<std::mutex> lock(queue_mutex);
-
-            if (stop)
+            
+            // 不允许在停止线程池后添加新任务
+            if(stop)
                 throw std::runtime_error("enqueue on stopped ThreadPool");
-
-            tasks.emplace([task]()
-                          { (*task)(); });
+                
+            tasks.emplace([task](){ (*task)(); });
         }
         condition.notify_one();
         return res;
     }
-
-    ~ThreadPool()
-    {
+    
+    // 析构函数，等待所有任务完成
+    ~ThreadPool() {
         {
             std::unique_lock<std::mutex> lock(queue_mutex);
             stop = true;
         }
         condition.notify_all();
-        for (std::thread &worker : workers)
+        for(std::thread &worker: workers)
             worker.join();
     }
 
 private:
+    // 工作线程列表
     std::vector<std::thread> workers;
+    // 任务队列
     std::queue<std::function<void()>> tasks;
-
+    
+    // 同步原语
     std::mutex queue_mutex;
     std::condition_variable condition;
     bool stop;
 };
 ```
+
+###### 使用示例：并行计算
+
+下面是一个使用线程池进行并行计算的例子，计算1到1000000的平方和：
+
+```cpp
+#include <chrono>
+#include <numeric>
+
+// 计算部分和的任务
+void partial_sum_task(int start, int end, long long& result) {
+    result = 0;
+    for (int i = start; i <= end; ++i) {
+        result += i * i;
+    }
+}
+
+int main() {
+    const int total_numbers = 1000000;
+    const int num_threads = 4;
+    const int chunk_size = total_numbers / num_threads;
+    
+    // 创建线程池
+    ThreadPool pool(num_threads);
+    std::vector<std::future<void>> futures;
+    std::vector<long long> partial_results(num_threads);
+    
+    auto start_time = std::chrono::high_resolution_clock::now();
+    
+    // 分发任务
+    for (int i = 0; i < num_threads; ++i) {
+        int start = i * chunk_size + 1;
+        int end = (i == num_threads - 1) ? total_numbers : (i + 1) * chunk_size;
+        
+        // 使用lambda捕获partial_results的引用
+        futures.emplace_back(pool.enqueue([start, end, &partial_results, i] {
+            long long sum = 0;
+            for (int num = start; num <= end; ++num) {
+                sum += num * num;
+            }
+            partial_results[i] = sum;
+        }));
+    }
+    
+    // 等待所有任务完成
+    for (auto&& future : futures) {
+        future.get();
+    }
+    
+    // 汇总结果
+    long long total = std::accumulate(partial_results.begin(), partial_results.end(), 0LL);
+    
+    auto end_time = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    
+    std::cout << "Total sum of squares from 1 to " << total_numbers 
+              << " is: " << total << std::endl;
+    std::cout << "Time taken: " << duration << " ms" << std::endl;
+    
+    return 0;
+}
+```
+
+
 分发调用部分
 ```c++
 int core = std::thread::hardware_concurrency();//获取CPU核心数
