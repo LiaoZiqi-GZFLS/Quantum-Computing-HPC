@@ -784,7 +784,6 @@ void simulate(size_t N, const char *Gates, std::complex<double> &Alpha, std::com
     int core = std::thread::hardware_concurrency();
     int group = core; // 包的大小
     size_t groupSize = N / group + (N % group != 0);
-    groupSize = groupSize/8 + (groupSize % 8 != 0); // 每个线程处理的矩阵数量
     if (groupSize == 0)
         groupSize = 1; // 计算包的大小
 
